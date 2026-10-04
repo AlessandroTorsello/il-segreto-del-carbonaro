@@ -129,8 +129,9 @@ ENIGMI = [
         "frammento": "I",
         "curiosita": ("Dalle Cinque Giornate di Milano del 1848 al Trattato di Torino del 1860: in "
                       "dodici anni Cavour portò la questione italiana al Congresso di Parigi "
-                      "(1856), l'alleanza con la Francia vinse a Magenta e Solferino (1859) e il "
-                      "Piemonte annesse Lombardia, Emilia e Toscana, cedendo Nizza e la Savoia."),
+                      "(1856), la Seconda guerra d'indipendenza (1859) fu vinta con l'alleanza francese "
+                      "a Magenta e Solferino e il Piemonte annesse Lombardia, Emilia e Toscana, "
+                      "cedendo Nizza e la Savoia."),
     },
     {
         "id": "ritratto",
@@ -181,7 +182,7 @@ ID_FASE1 = [e["id"] for e in ENIGMI if e.get("fase", 1) == 1]
 N_FASE1 = len(ID_FASE1)
 # Fascicoli sparsi a terra nell'archivio, mescolati: il giocatore deve rimetterli in ordine cronologico.
 FASCICOLI = [("Il Trattato di Torino", 1860), ("Il Congresso di Parigi", 1856), ("I Moti Milanesi", 1848),
-             ("Magenta e Solferino", 1859)]
+             ("Seconda guerra d'indipendenza", 1859)]
 DATE_AMMESSE = {1848, 1849, 1854, 1856, 1858, 1859, 1860, 1861, 1864, 1866, 1870}     # le date importanti da programma
 assert all(anno in DATE_AMMESSE for _, anno in FASCICOLI), "un fascicolo ha una data non ammessa"
 CODICE_FASCICOLI = "".join(str(anno)[-1] for _, anno in sorted(FASCICOLI, key=lambda f: f[1]))     # ultima cifra, in ordine cronologico: 8690
@@ -2292,9 +2293,9 @@ class PannelloFascicoli(Entity):
             b.on_click = lambda i=i: self._clic(i)
             testo_ui(scheda, avvolgi(titolo, 14), (0, .028), 1.05, INCHIOSTRO, "b", z=-.01)
             testo_ui(scheda, "(%d)" % anno, (0, -.045), 1.9, BORDEAUX, "b", z=-.01)
-            disco = quad_ui(scheda, (-.1, .058), (.035, .035), BORDEAUX, z=-.02)
+            disco = quad_ui(scheda, (-.118, .076), (.035, .035), BORDEAUX, z=-.02)
             disco.enabled = False
-            numero = testo_ui(scheda, "", (-.1, .058), 1.5, ORO_CHIARO, "b", z=-.03)
+            numero = testo_ui(scheda, "", (-.118, .076), 1.5, ORO_CHIARO, "b", z=-.03)
             self.badge.append(disco)
             self.testo_badge.append(numero)
         self.lucchetto = quad_ui(self, (-.385, -.125), (.075, .075), color.white, gioco.t_lucchetto)
