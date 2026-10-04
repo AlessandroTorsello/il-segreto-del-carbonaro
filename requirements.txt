@@ -1,0 +1,2 @@
+pygame>=2.1
+ursina>=7.0
