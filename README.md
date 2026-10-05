@@ -20,14 +20,6 @@ pip install ursina
 python il_segreto_del_carbonaro_3d.py
 ```
 
-### Versione 3D 2 (alleggerita)
-
-Se la versione 3D scatta sul tuo PC (tipico con grafica integrata), usa `il_segreto_del_carbonaro_3d_v2.py`: stesso gioco e stessi enigmi, ma lo shader illumina ogni pixel solo con le 12 luci più vicine al giocatore (invece di 36) e salta quelle spente, lontane o nell'altra stanza. Se ancora scatta, abbassa `N_LUCI_ATTIVE` all'inizio del file (es. 8).
-
-```bash
-python il_segreto_del_carbonaro_3d_v2.py
-```
-
 **Comandi:** WASD / frecce per muoverti · Maiusc per correre · Spazio per saltare · Ctrl per accovacciarti · mouse per guardarti intorno · clic sull'oggetto inquadrato dal mirino per esaminarlo · Invio per confermare · Esc per chiudere o mettere in pausa · M per l'audio · C per mostrare/nascondere la pianta della ferrovia · F11 per lo schermo intero · R per rigiocare a fine partita.
 
 **Come si gioca:** la parola d'ordine **OBBEDISCO** è divisa in sette frammenti (OB · BE · D · I · S · C · O).
