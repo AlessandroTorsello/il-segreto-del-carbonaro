@@ -2681,7 +2681,6 @@ class ScambioVisivo:
         self.perno = Entity(parent=self.radice, position=(-.115, .06, -.115))
         blocco(self.perno, (0, .055, 0), (.014, .11, .014), col=C(196, 196, 206))
         blocco(self.perno, (0, .12, 0), (.04, .04, .04), col=C(214, 40, 40), model="sphere")
-        self.alone = sprite_luminoso(self.radice, (0, .1, 0), (.24, .24), gioco.t_alone, C(255, 205, 90, 110))
         self.hitbox = Entity(parent=self.radice, model="cube", collider="box", position=(0, .22, 0),
                              scale=(.42, .5, .42), visible=False, id_oggetto=self.id)       # bersaglio largo: facile da centrare
         self.angolo = self.angolo_visibile = 90.0 * tessera.giri
@@ -2704,7 +2703,6 @@ class ScambioVisivo:
 
     def imposta_attivo(self, si):
         self.attivo = si
-        self.alone.enabled = si
 
     def aggiorna(self, dt, t):
         self.angolo_visibile += (self.angolo - self.angolo_visibile) * min(1.0, dt * 9)
@@ -2712,9 +2710,6 @@ class ScambioVisivo:
             self.angolo_visibile = self.angolo
         self.nodo.rotation_y = self.angolo_visibile
         self.perno.rotation_x += ((38 if self.n_clic % 2 else -38) - self.perno.rotation_x) * min(1.0, dt * 10)
-        if self.alone.enabled:
-            k = 1 + .14 * math.sin(t * 4 + self.fase)
-            self.alone.scale = Vec3(.24 * k, .24 * k, 1)
 
 
 class TrenoVisivo:
