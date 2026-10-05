@@ -6,6 +6,7 @@ Escape room ambientata nel Risorgimento, in **due versioni** Python:
 |---|---|---|---|
 | **3D** | `il_segreto_del_carbonaro_3d.py` | [Ursina](https://www.ursinaengine.org/) (Panda3D) | Stanza 3D esplorabile in prima persona, con archivio segreto e ferrovia |
 | **2D** | `il_segreto_del_carbonaro.py` | pygame | Punta e clicca con finestre modali |
+| **3D finale** | [`finale/`](finale/) | Ursina (Panda3D) | Come la 3D, con menu Grafica (Bassa / Media / Alta / Max) nella pausa, più fluida e con l'eseguibile Windows nella pagina [Releases](https://github.com/AlessandroTorsello/il-segreto-del-carbonaro/releases) |
 
 > **Torino, 4 maggio 1860.** Sei un corriere della Carboneria, chiuso nello studio segreto di un patriota mentre i gendarmi forzano l'ingresso. Hai **15 minuti** (20 nella versione 3D) per decifrare i codici nascosti negli oggetti della stanza, ricomporre la parola d'ordine e fuggire prima che Garibaldi salpi da Quarto.
 
