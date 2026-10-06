@@ -2407,6 +2407,10 @@ class PannelloFascicoli(Entity):
             self.testo_badge.append(numero)
         self.lucchetto = quad_ui(self, (-.385, -.125), (.075, .075), color.white, gioco.t_lucchetto)
         self.lucchetto.enabled = False              # il codice non si digita più qui: niente campo, niente lucchetto
+        # il codice ricavato dall'ordine scelto: appare quando tutte le schede sono numerate, cosi' lo si ricorda al Quadro
+        self.etichetta_codice = testo_ui(self, "Codice ricavato", (0, -.105), .9, C(110, 84, 60), "i")
+        self.testo_codice = testo_ui(self, "", (0, -.15), 2.6, BORDEAUX, "b")
+        self.etichetta_codice.enabled = self.testo_codice.enabled = False
 
     def _clic(self, i):
         if i in self.ordine:
@@ -2421,6 +2425,9 @@ class PannelloFascicoli(Entity):
             numerata = i in self.ordine
             disco.enabled = numerata
             numero.text = str(self.ordine.index(i) + 1) if numerata else ""
+        completo = len(self.ordine) == len(FASCICOLI)
+        self.etichetta_codice.enabled = self.testo_codice.enabled = completo
+        self.testo_codice.text = " ".join(str(FASCICOLI[i][1])[-1] for i in self.ordine) if completo else ""
 
     def azzera(self):
         """Nuova partita o riapertura: schede senza numeri e lucchetto chiuso."""
