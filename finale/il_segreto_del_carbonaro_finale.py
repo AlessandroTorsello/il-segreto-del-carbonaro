@@ -17,16 +17,18 @@ nessuna immagine, modello 3D o file audio esterno.
 Comandi:  WASD / frecce = muoviti · mouse = guarda · clic = esamina
           Invio = conferma · Esc = chiudi / pausa (in pausa: 1-4 = grafica) · M = audio · F11 = schermo intero
           R = rigioca (a fine partita)
+          Mappamondo: trascina (o A-D / frecce) per girarlo · W-S = inclina · rotellina = zoom · Esc = esci
 
-La parola d'ordine OBBEDISCO è formata da sette frammenti (OB·BE·D·I·S·C·O):
-  - cinque enigmi nello studio (pianoforte, spartito, mappa, ritratto, scrivania);
-  - risolti i cinque, la libreria di destra scorre di lato e rivela l'archivio segreto, con
+La parola d'ordine OBBEDISCO è formata da nove frammenti, una lettera ciascuno (O·B·B·E·D·I·S·C·O):
+  - sette enigmi nello studio (pianoforte, spartito, mappa, mappamondo, camino, ritratto, scrivania);
+    il mappamondo non ha una finestra: ci si avvicina, lo si gira col mouse e si clicca la città giusta;
+  - risolti i sette, la libreria di destra scorre di lato e rivela l'archivio segreto, con
       · "Analizza fascicoli": i quattro fascicoli a terra, da mettere in ordine cronologico; il codice
         che ne esce (8690) va inserito nel Quadro di Comando Ferroviario, che solo allora si accende;
       · il Quadro di Comando Ferroviario apre il minigioco "Il Treno Diplomatico":
         si ruotano gli scambi con il mouse (o coi tasti 1-7) e si porta Cavour da Torino a Plombières
         (Invio / leva verde = parti · R = ripristina gli scambi · C = mostra/nascondi la pianta).
-  - con tutti e sette i frammenti la porta d'uscita si sblocca.
+  - con tutti e nove i frammenti la porta d'uscita si sblocca.
 """
 
 from ursina import *                         # noqa: F401,F403  (stile tipico di Ursina)
@@ -61,7 +63,7 @@ loadPrcFileData("", "vfs-case-sensitive 0")
 # --------------------------------------------------------------------------
 # Configurazione
 # --------------------------------------------------------------------------
-TEMPO_TOTALE = 20 * 60          # 20:00
+TEMPO_TOTALE = 25 * 60          # 25:00
 DISTANZA_INTERAZIONE = 4.2      # metri
 DISTANZA_INTERAZIONE_ARCHIVIO = 8.0   # nell'archivio tutto è a grandezza di ferrovia: scambi e leve si azionano da lontano
 BONUS_VELOCITA_ARCHIVIO = 1.5   # nell'archivio (sala enorme) si cammina più svelti
@@ -122,7 +124,7 @@ def salva_grafica(indice):
 # Contenuti del gioco
 # --------------------------------------------------------------------------
 # L'elenco è in "ordine di parola": i frammenti, letti da sinistra a destra, formano
-# OBBEDISCO.  I primi cinque enigmi (fase 1) si risolvono nello studio; quando sono
+# OBBEDISCO, una lettera per enigma.  I primi sette enigmi (fase 1) si risolvono nello studio; quando sono
 # tutti risolti la libreria scorre di lato e si entra nell'archivio segreto, dove
 # aspettano gli ultimi due (fase 2): i fascicoli (il cui codice si digita nel Quadro) e il Treno Diplomatico.
 ENIGMI = [
@@ -134,7 +136,7 @@ ENIGMI = [
                     "austriaci, lodando un compositore. Ma è l'acronimo del "
                     "futuro Re d'Italia. Chi è il musicista?"),
         "soluzioni": ["verdi", "giuseppe verdi", "viva verdi"],
-        "frammento": "OB",
+        "frammento": "O",
         "curiosita": ("La polizia austriaca mandava ogni notte agenti a cancellare le scritte "
                       "«Viva V.E.R.D.I.», ma il giorno dopo ricomparivano: non si poteva "
                       "vietare di inneggiare a un compositore amatissimo."),
@@ -145,7 +147,7 @@ ENIGMI = [
         "titolo": "Il Canto degli Italiani",
         "domanda": "Siediti al pianoforte e suona lo spartito sul leggio.",
         "soluzioni": [],
-        "frammento": "BE",
+        "frammento": "B",
         "curiosita": ("Goffredo Mameli scrisse il testo a Genova e Michele Novaro lo mise in musica "
                       "proprio qui a Torino, nel novembre del 1847. Diventò inno nazionale "
                       "provvisorio nel 1946 e ufficiale soltanto nel 2017."),
@@ -158,10 +160,40 @@ ENIGMI = [
                     "volontari salparono davvero da Quarto? "
                     "(Tra loro c'era una donna)."),
         "soluzioni": ["1089", "1 089"],
-        "frammento": "D",
+        "frammento": "B",
         "curiosita": ("La donna era Rose Montmasson, moglie di Francesco Crispi: unica donna "
                       "della spedizione, curò i feriti e fu soprannominata «l'angelo di "
                       "Calatafimi». Compare nell'elenco ufficiale dei 1089."),
+    },
+    {
+        "id": "globo",
+        "nome": "Mappamondo",
+        "nome_hud": "Globo",
+        "tipo": "globo",                # niente finestra: ci si avvicina al globo e si clicca uno spillo
+        "titolo": "Il Mappamondo",
+        "domanda": ("Cavour ha fatto una rinuncia dolorosa per l'alleanza francese: ha ceduto "
+                    "la Savoia e quale città? Gira il mappamondo e indicala."),
+        "soluzioni": [],
+        "frammento": "E",
+        "curiosita": ("Promesse a Napoleone III a Plombières (1858) in cambio dell'aiuto contro l'Austria, "
+                      "Nizza e la Savoia furono cedute alla Francia con il Trattato di Torino del 24 marzo "
+                      "1860: dopo l'armistizio di Villafranca, che aveva lasciato il Veneto all'Austria, "
+                      "furono il prezzo dell'assenso francese all'annessione di Toscana ed Emilia. Nizza era "
+                      "la città natale di Garibaldi, che non perdonò mai a Cavour quella cessione."),
+    },
+    {
+        "id": "camino",
+        "nome": "Camino",
+        "titolo": "La Lettera Bruciata",
+        "domanda": ("Tra le braci c'è una lettera mezza bruciata, scritta col cifrario di Cesare: "
+                    "ogni lettera è spostata di tre posti in avanti nell'alfabeto di 26 lettere "
+                    "(A diventa D, B diventa E, C diventa F…). Decifrala: come si chiamavano tra loro i carbonari? "
+                    "EXRQL FXJLQL"),
+        "soluzioni": ["buoni cugini", "i buoni cugini", "cugini"],
+        "frammento": "D",
+        "curiosita": ("I carbonari si chiamavano tra loro \"buoni cugini\" e chiamavano \"pagani\" chi "
+                      "non era affiliato. Le loro cellule si dicevano \"vendite\", come le botteghe dei "
+                      "carbonai da cui la società prese nome e simboli."),
     },
     {
         "id": "libreria",
@@ -241,14 +273,15 @@ INNO = [("Re", 62), ("Re", 62), ("Mi", 64), ("Re", 62), ("Si", 71), ("Si", 71), 
         ("Si", 71), ("Re", 74), ("Do", 72), ("Si", 71), ("La", 69), ("Si", 71), ("La", 69), ("Sol", 67)]
 assert ENIGMI_PER_ID["libreria"]["soluzioni"][0] == CODICE_FASCICOLI, "il codice dei fascicoli non corrisponde"
 PAROLA_ORDINE = "obbedisco"
+assert "".join(e["frammento"] for e in ENIGMI) == PAROLA_ORDINE.upper(), "i frammenti non formano la parola d'ordine"
 
 TRAMA = ("4 maggio 1860. Sei un corriere della Carboneria, nascosto nello studio "
          "segreto di un patriota torinese. Porti un messaggio che deve raggiungere "
          "Garibaldi prima che salpi da Quarto. Ma qualcuno ha parlato: i gendarmi "
          "hanno circondato il palazzo e stanno forzando l'ingresso.\n"
-         "Il patriota ha nascosto la parola d'ordine dell'uscita segreta in sette "
-         "frammenti: cinque custoditi dagli oggetti della stanza, gli ultimi due "
-         "in un luogo che solo un vero patriota saprebbe trovare. Hai 20 minuti per "
+         "Il patriota ha nascosto la parola d'ordine dell'uscita segreta in nove "
+         "frammenti: sette custoditi dagli oggetti della stanza, gli ultimi due "
+         "in un luogo che solo un vero patriota saprebbe trovare. Hai 25 minuti per "
          "decifrare i codici, ricomporre la chiave e fuggire.")
 
 CURIOSITA_FINALE = ("Sei anni dopo, il 9 agosto 1866, durante la Terza guerra "
@@ -1059,6 +1092,286 @@ def img_lettera():
     d.text((w - 50, h - 60), "C.", font=font_pil("i", 34), fill=(40, 30, 50), anchor="mm")
     d.ellipse((40, h - 90, 100, h - 30), fill=(130, 20, 36))
     d.ellipse((52, h - 78, 88, h - 42), outline=(90, 10, 22), width=3)
+    return img
+
+
+# --- Mappamondo -------------------------------------------------------------
+# Coste semplificate in (longitudine, latitudine): l'Europa e il Mediterraneo sono più dettagliati del resto del mondo.
+COSTA_EURASIA = [
+    # Gibilterra -> costa mediterranea di Spagna e Francia
+    (-5.6, 36.0), (-4.4, 36.7), (-2.1, 36.7), (-0.7, 37.6), (0.2, 38.8), (-0.3, 39.5), (0.9, 40.8), (2.2, 41.4),
+    (3.2, 42.2), (3.0, 43.2), (4.2, 43.5), (4.8, 43.4), (5.4, 43.25), (6.2, 43.1), (7.3, 43.7),
+    # Liguria e Italia tirrenica
+    (7.8, 43.8), (8.8, 44.4), (9.8, 44.05), (10.3, 43.5), (10.6, 42.95), (11.1, 42.4), (12.2, 41.75), (13.5, 41.2),
+    (14.25, 40.83), (14.75, 40.6), (15.0, 40.0), (15.7, 39.5), (15.8, 38.9), (15.65, 38.2), (16.1, 37.95),
+    # Calabria ionica, golfo di Taranto, Salento, Puglia, Adriatico
+    (16.6, 38.4), (17.15, 39.0), (16.6, 39.7), (16.6, 40.1), (17.2, 40.45), (18.0, 40.1), (18.4, 39.8),
+    (18.5, 40.15), (17.9, 40.65), (16.9, 41.1), (16.0, 41.45), (16.2, 41.9), (15.2, 41.95), (14.2, 42.5),
+    (13.6, 43.55), (12.6, 44.1), (12.3, 44.9), (12.35, 45.45), (13.1, 45.75), (13.75, 45.65),
+    # Istria, Dalmazia, Albania, Grecia
+    (13.6, 45.2), (13.9, 44.8), (14.5, 45.3), (15.2, 44.2), (16.4, 43.5), (17.5, 43.0), (18.1, 42.65), (18.7, 42.3),
+    (19.4, 41.9), (19.4, 41.3), (19.4, 40.4), (20.0, 39.7), (20.7, 39.0), (21.1, 38.3), (21.6, 37.9), (21.7, 36.8),
+    (22.4, 36.4), (22.8, 36.8), (23.2, 36.4), (23.1, 37.3), (23.7, 37.9), (24.05, 37.7), (24.1, 38.2),
+    (23.0, 39.0), (22.6, 40.0), (22.9, 40.6), (23.7, 40.2), (23.9, 40.7), (24.4, 40.9), (26.0, 40.8),
+    (26.2, 40.35),
+    # Dardanelli -> costa egea e meridionale della Turchia, Levante, Sinai
+    (26.4, 40.1), (26.1, 39.5), (26.9, 39.3), (26.3, 38.3), (27.1, 38.4), (27.3, 37.0), (28.2, 36.7), (29.6, 36.2),
+    (30.6, 36.8), (32.3, 36.1), (34.0, 36.3), (34.6, 36.8), (36.0, 36.6), (35.8, 35.5), (35.5, 34.0),
+    (34.8, 32.1), (34.3, 31.3), (32.6, 31.05), (32.5, 29.9), (33.6, 28.3), (34.3, 27.8), (34.95, 29.5),
+    # Penisola arabica
+    (35.2, 28.0), (37.2, 24.2), (39.2, 21.5), (40.8, 19.0), (42.7, 15.5), (43.4, 12.7), (45.0, 12.8), (48.5, 14.0),
+    (52.2, 15.6), (55.0, 17.0), (57.8, 19.0), (59.8, 22.5), (58.6, 23.6), (56.6, 24.5), (56.4, 26.3), (56.0, 25.0),
+    (54.4, 24.3), (51.6, 24.2), (51.6, 25.9), (50.6, 25.0), (50.1, 26.3), (48.6, 27.9), (47.9, 29.4), (48.5, 30.0),
+    # Iran, Pakistan, India
+    (50.8, 28.9), (51.4, 27.9), (54.0, 26.6), (56.3, 27.2), (57.3, 25.8), (61.6, 25.2), (66.5, 25.4), (67.0, 24.8),
+    (68.4, 23.6), (69.0, 22.4), (70.3, 20.9), (72.6, 21.2), (72.8, 19.0), (73.8, 15.5), (74.8, 12.9), (76.3, 9.9),
+    (77.5, 8.1), (78.2, 8.9), (79.8, 10.3), (80.2, 13.1), (82.3, 16.9), (84.9, 19.2), (86.5, 20.0), (87.9, 21.7),
+    (90.5, 22.0), (92.3, 21.0), (94.2, 18.8), (94.3, 16.0), (97.6, 16.5), (98.5, 13.0), (98.3, 9.5), (98.5, 8.0),
+    # Indocina, Cina, Corea
+    (100.3, 6.0), (101.3, 2.8), (103.8, 1.3), (103.4, 4.0), (102.2, 6.2), (100.5, 7.0), (99.2, 10.0), (100.5, 13.5),
+    (101.0, 12.6), (103.0, 11.0), (104.8, 8.6), (106.7, 10.3), (109.3, 12.0), (108.9, 15.3), (106.0, 18.0),
+    (106.7, 20.0), (108.0, 21.5), (109.8, 21.5), (110.5, 21.2), (114.2, 22.3), (117.0, 23.5), (119.5, 26.0),
+    (121.5, 28.5), (121.9, 31.0), (120.3, 34.0), (119.2, 34.6), (120.3, 36.0), (122.6, 37.4), (119.5, 37.1),
+    (117.7, 38.9), (118.0, 39.2), (121.2, 38.8), (121.6, 40.0), (124.0, 39.8), (125.1, 39.6), (126.6, 37.5),
+    (126.5, 34.5), (129.0, 35.1), (129.5, 36.0), (129.4, 37.5), (128.4, 38.8), (129.7, 41.0), (130.7, 42.3),
+    # Siberia orientale, Kamchatka, Chukotka
+    (131.9, 43.1), (135.4, 43.8), (138.0, 45.5), (140.5, 48.5), (141.0, 52.9), (137.5, 54.0), (135.1, 54.5),
+    (138.5, 56.5), (143.0, 59.3), (148.0, 59.4), (152.0, 59.2), (156.0, 57.5), (156.7, 51.0), (158.5, 52.9),
+    (162.0, 56.0), (163.0, 59.5), (166.0, 60.3), (172.0, 61.0), (177.0, 62.5), (179.9, 64.5),
+    # costa artica (da est a ovest)
+    (179.9, 68.9), (170.0, 70.0), (160.0, 69.5), (150.0, 71.5), (140.0, 72.5), (130.0, 71.0), (113.0, 73.5),
+    (105.0, 77.5), (95.0, 76.0), (87.0, 74.0), (80.0, 73.5), (73.0, 72.5), (68.0, 69.0), (60.0, 69.0), (53.0, 68.0),
+    (44.0, 68.5), (43.5, 66.3), (40.0, 64.6), (37.5, 64.0), (35.0, 64.5), (34.5, 66.0), (37.0, 66.2), (41.0, 67.8),
+    (33.0, 69.3), (28.5, 70.9), (25.8, 71.1),
+    # Norvegia, Svezia, golfo di Botnia, Finlandia, Baltico
+    (21.0, 70.2), (18.9, 69.8), (16.0, 68.6), (14.4, 67.3), (13.0, 66.0), (11.0, 64.5), (10.4, 63.4), (7.0, 62.7),
+    (5.0, 62.0), (5.3, 60.4), (5.6, 58.9), (6.5, 58.1), (8.0, 58.0), (9.5, 58.9), (10.7, 59.9), (11.2, 59.1),
+    (11.9, 57.7), (12.6, 56.1), (12.9, 55.6), (14.3, 55.6), (14.6, 56.1), (16.4, 56.7), (16.6, 57.8), (18.1, 59.3),
+    (18.7, 60.0), (17.1, 61.0), (17.3, 62.4), (20.3, 63.8), (22.2, 65.6), (24.2, 65.8), (25.4, 65.0), (21.6, 63.1),
+    (21.5, 61.0), (22.3, 60.0), (25.0, 60.2), (28.0, 60.5), (30.3, 59.9), (28.0, 59.5), (24.7, 59.4), (23.6, 58.9),
+    (24.1, 57.0), (22.0, 57.6), (21.0, 56.5), (21.1, 55.7), (21.0, 55.3), (19.9, 54.9), (18.6, 54.4), (16.0, 54.3),
+    (14.2, 53.9), (12.1, 54.2), (10.9, 54.0),
+    # Danimarca, Mare del Nord, Francia atlantica, Spagna e Portogallo
+    (10.9, 56.4), (10.6, 57.7), (8.2, 56.7), (8.6, 55.5), (8.9, 54.0), (8.5, 53.6), (7.0, 53.6), (5.5, 53.4),
+    (4.7, 52.9), (4.2, 51.9), (3.2, 51.3), (1.6, 50.9), (1.6, 50.2), (0.2, 49.5), (-1.2, 49.4), (-1.9, 49.7),
+    (-1.6, 48.6), (-3.5, 48.8), (-4.8, 48.4), (-4.5, 47.8), (-2.2, 47.2), (-1.2, 46.0), (-1.2, 44.6), (-1.8, 43.4),
+    (-3.8, 43.5), (-5.8, 43.6), (-8.0, 43.7), (-9.3, 43.0), (-8.8, 41.0), (-9.5, 38.8), (-8.8, 37.0), (-7.4, 37.2),
+    (-6.3, 36.8),
+]
+COSTA_AFRICA = [
+    (-5.8, 35.8), (-5.3, 35.9), (-2.0, 35.1), (-0.6, 35.7), (1.5, 36.5), (3.0, 36.8), (5.0, 36.7), (6.9, 36.9),
+    (8.6, 36.9), (9.9, 37.3), (10.2, 36.8), (11.0, 37.1), (10.6, 36.4), (11.1, 35.2), (10.8, 34.7), (10.1, 33.9),
+    (11.1, 33.2), (13.2, 32.9), (15.1, 32.4), (15.6, 31.4), (17.5, 31.0), (19.0, 30.3), (20.1, 31.0), (20.1, 32.1),
+    (21.6, 32.9), (23.0, 32.6), (24.0, 32.1), (25.2, 31.6), (27.3, 31.4), (29.9, 31.2), (31.0, 31.6), (32.3, 31.3),
+    (32.5, 29.9), (33.6, 27.2), (34.6, 25.5), (35.6, 23.9), (37.2, 21.0), (37.4, 19.0), (38.6, 18.0), (39.5, 15.6),
+    (41.5, 13.9), (43.3, 12.5), (43.1, 11.6), (44.5, 10.4), (48.0, 11.2), (51.2, 11.8), (51.3, 10.4), (50.8, 9.0),
+    (49.0, 6.0), (47.0, 4.0), (44.0, 1.5), (42.0, -1.0), (40.0, -3.0), (39.7, -4.0), (39.3, -6.8), (40.4, -10.4),
+    (40.7, -14.5), (39.0, -17.0), (34.8, -19.8), (35.5, -22.0), (35.5, -24.0), (32.9, -26.0), (32.5, -28.6),
+    (31.0, -29.9), (28.0, -32.7), (25.6, -34.0), (20.0, -34.8), (18.4, -34.0), (17.9, -32.0), (16.5, -28.6),
+    (15.2, -26.6), (14.5, -22.9), (12.0, -18.5), (11.8, -17.0), (13.4, -12.0), (13.3, -8.8), (12.2, -6.0),
+    (11.8, -4.8), (9.3, -1.0), (9.6, 2.5), (9.4, 3.9), (8.5, 4.5), (6.0, 4.3), (3.4, 6.4), (1.2, 6.1), (-2.0, 4.8),
+    (-4.0, 5.2), (-7.5, 4.4), (-9.5, 5.5), (-11.5, 6.9), (-13.2, 8.5), (-15.0, 11.0), (-16.8, 12.5), (-17.5, 14.7),
+    (-16.5, 16.0), (-16.0, 18.0), (-17.1, 21.0), (-16.0, 23.7), (-14.5, 26.1), (-13.2, 27.7), (-11.0, 28.6),
+    (-9.8, 29.9), (-9.6, 30.4), (-9.8, 31.5), (-8.5, 33.3), (-7.6, 33.6), (-6.8, 34.0), (-6.2, 35.1),
+]
+COSTA_NORD_AMERICA = [
+    (-168.0, 65.6), (-166.0, 68.9), (-156.8, 71.3), (-141.0, 69.6), (-128.0, 70.0), (-115.0, 68.5), (-95.0, 68.0),
+    (-90.0, 69.0), (-82.0, 68.0), (-81.0, 64.0), (-77.0, 62.5), (-70.0, 60.0), (-64.5, 60.3), (-61.0, 56.0),
+    (-56.0, 52.0), (-59.0, 48.0), (-64.2, 48.8), (-66.0, 45.0), (-70.0, 43.8), (-70.6, 42.6), (-70.0, 41.6),
+    (-74.0, 40.6), (-75.5, 38.5), (-75.5, 35.2), (-81.0, 31.8), (-80.1, 26.5), (-80.4, 25.2), (-81.8, 26.5),
+    (-82.8, 28.0), (-84.5, 30.0), (-89.0, 30.2), (-90.0, 29.0), (-94.0, 29.6), (-97.2, 27.6), (-97.5, 22.0),
+    (-96.0, 19.0), (-94.5, 18.2), (-91.0, 19.0), (-90.4, 21.0), (-87.0, 21.5), (-88.0, 18.5), (-88.2, 16.0),
+    (-84.0, 15.8), (-83.3, 10.5), (-79.5, 9.6), (-77.5, 8.5), (-78.5, 7.5), (-80.0, 7.4), (-83.0, 8.2), (-85.7, 10.0),
+    (-87.5, 13.0), (-91.0, 13.9), (-94.5, 16.0), (-96.5, 15.7), (-100.0, 17.0), (-105.5, 20.5), (-105.6, 23.0),
+    (-108.5, 25.5), (-112.0, 29.0), (-114.8, 31.8), (-114.0, 29.0), (-112.0, 26.0), (-109.9, 23.0), (-112.0, 24.8),
+    (-115.0, 29.5), (-117.1, 32.6), (-120.6, 34.5), (-122.5, 37.8), (-124.2, 40.4), (-124.5, 43.0), (-124.0, 46.3),
+    (-124.7, 48.4), (-123.0, 49.0), (-127.0, 50.5), (-130.0, 54.5), (-134.0, 58.0), (-139.0, 59.5), (-146.0, 60.5),
+    (-152.0, 59.0), (-154.0, 57.5), (-162.0, 55.0), (-165.0, 54.5), (-158.0, 56.5), (-157.0, 58.8), (-162.0, 58.6),
+    (-165.0, 60.5), (-164.5, 63.0), (-161.0, 64.5), (-166.0, 64.6),
+]
+COSTA_SUD_AMERICA = [
+    (-77.5, 8.5), (-75.5, 10.5), (-71.5, 12.4), (-68.0, 10.5), (-64.0, 10.6), (-61.5, 10.0), (-60.0, 8.5),
+    (-57.0, 6.0), (-52.0, 5.0), (-50.0, 1.8), (-49.0, 0.0), (-44.0, -2.5), (-39.0, -3.5), (-35.2, -5.5), (-35.0, -9.0),
+    (-38.5, -13.0), (-39.0, -17.5), (-41.0, -22.0), (-43.2, -22.9), (-48.5, -26.0), (-48.6, -28.5), (-51.0, -31.0),
+    (-53.4, -33.7), (-56.0, -34.9), (-58.0, -34.5), (-57.0, -36.5), (-58.0, -38.5), (-62.0, -39.0), (-62.5, -41.0),
+    (-65.0, -42.5), (-67.5, -46.0), (-65.8, -47.8), (-68.3, -50.2), (-68.4, -52.4), (-67.0, -54.8), (-71.0, -55.0),
+    (-74.0, -52.5), (-75.5, -48.0), (-74.0, -43.0), (-73.5, -37.0), (-71.6, -33.0), (-71.4, -28.0), (-70.4, -23.6),
+    (-70.3, -18.5), (-76.3, -13.8), (-77.1, -12.0), (-79.6, -7.0), (-81.3, -4.6), (-80.5, -1.0), (-79.8, 1.5),
+    (-77.3, 4.0), (-77.7, 7.5),
+]
+COSTA_AUSTRALIA = [
+    (114.0, -22.0), (114.0, -26.5), (115.0, -34.0), (118.0, -35.0), (123.5, -34.0), (129.0, -31.6), (134.0, -33.0),
+    (137.5, -35.5), (140.0, -37.8), (144.0, -38.4), (146.3, -39.1), (150.0, -37.5), (151.2, -33.9), (153.5, -28.5),
+    (153.0, -25.0), (149.0, -21.0), (146.0, -18.5), (145.4, -15.0), (142.5, -10.7), (141.5, -12.5), (141.5, -17.0),
+    (139.5, -17.5), (136.5, -15.5), (136.8, -12.3), (132.5, -11.5), (130.8, -12.4), (129.3, -15.0), (126.0, -14.0),
+    (122.0, -17.0), (121.0, -19.5), (116.7, -20.6),
+]
+COSTA_GROENLANDIA = [(-73.0, 78.0), (-60.0, 82.0), (-35.0, 83.5), (-20.0, 82.0), (-18.0, 77.0), (-22.0, 70.0), (-32.0, 68.0),
+               (-40.0, 65.0), (-43.5, 60.0), (-48.0, 61.0), (-52.0, 64.0), (-54.0, 67.0), (-55.0, 70.0), (-58.0, 75.5),
+               (-68.0, 77.0)]
+COSTA_ISOLE = [
+    # Mediterraneo
+    [(12.4, 37.8), (13.3, 38.2), (14.5, 38.05), (15.6, 38.25), (15.1, 37.5), (15.3, 37.0), (15.1, 36.65), (14.3, 36.8),
+     (12.9, 37.5)],                                                                                  # Sicilia
+    [(8.2, 41.0), (9.2, 41.25), (9.8, 40.9), (9.7, 40.0), (9.6, 39.2), (9.0, 39.1), (8.4, 38.9), (8.4, 39.5),
+     (8.5, 40.6)],                                                                                   # Sardegna
+    [(9.4, 43.0), (9.55, 42.0), (9.2, 41.4), (8.6, 41.7), (8.7, 42.6)],                              # Corsica
+    [(23.5, 35.3), (24.5, 35.4), (26.3, 35.2), (25.8, 35.0), (24.0, 35.0)],                         # Creta
+    [(32.3, 35.0), (33.0, 35.3), (34.6, 35.7), (34.0, 34.9), (33.0, 34.6), (32.4, 34.7)],           # Cipro
+    [(2.3, 39.6), (3.5, 39.8), (3.2, 39.3), (2.5, 39.4)],                                            # Maiorca
+    [(23.4, 38.9), (24.6, 38.1), (24.2, 38.1), (23.3, 38.6)],                                        # Eubea
+    # Atlantico e Mare del Nord
+    [(-5.7, 50.1), (-4.2, 50.4), (-3.0, 50.7), (-1.3, 50.7), (0.3, 50.8), (1.4, 51.2), (0.9, 51.6), (1.75, 52.6),
+     (0.4, 52.9), (0.1, 53.6), (-1.1, 54.6), (-1.6, 55.6), (-2.5, 56.1), (-2.1, 57.15), (-1.8, 57.6), (-3.1, 58.6),
+     (-5.0, 58.6), (-5.7, 57.5), (-5.6, 56.4), (-5.6, 55.3), (-4.9, 54.8), (-3.4, 54.9), (-3.4, 54.3), (-3.0, 53.4),
+     (-4.6, 53.3), (-4.1, 52.8), (-4.4, 52.2), (-5.3, 51.8), (-4.0, 51.6), (-3.0, 51.4), (-4.2, 51.2),
+     (-5.0, 50.4)],                                                                                  # Gran Bretagna
+    [(-6.2, 53.35), (-5.9, 54.6), (-6.2, 55.2), (-7.3, 55.4), (-8.5, 54.9), (-8.6, 54.2), (-10.0, 54.2), (-9.9, 53.5),
+     (-9.4, 52.6), (-10.4, 51.8), (-9.8, 51.5), (-8.5, 51.6), (-6.4, 52.2)],                         # Irlanda
+    [(-22.0, 64.0), (-24.0, 65.5), (-22.0, 66.4), (-16.0, 66.5), (-13.6, 65.2), (-15.0, 64.2), (-18.5, 63.4),
+     (-22.0, 63.8)],                                                                                 # Islanda
+    [(10.0, 55.0), (12.6, 55.7), (12.2, 56.1), (10.6, 55.5)],                                        # Selandia e Fionia
+    # resto del mondo
+    [(49.3, -12.0), (50.3, -15.5), (49.5, -17.0), (48.0, -22.0), (47.0, -25.0), (45.2, -25.5), (43.7, -23.0),
+     (44.0, -20.0), (44.4, -17.0), (46.3, -15.7), (48.0, -13.5)],                                    # Madagascar
+    [(79.8, 6.5), (80.0, 9.7), (81.3, 8.5), (81.8, 7.0), (80.6, 5.9)],                               # Sri Lanka
+    [(95.3, 5.6), (97.5, 5.2), (100.4, 2.2), (103.6, -1.0), (106.0, -3.2), (105.8, -5.8), (104.5, -5.9),
+     (101.5, -3.0), (98.7, 0.0), (96.0, 2.8)],                                                       # Sumatra
+    [(105.2, -6.8), (108.0, -6.3), (111.0, -6.4), (114.5, -7.7), (114.4, -8.7), (111.0, -8.2), (106.5, -7.4)],  # Giava
+    [(109.0, 1.5), (110.0, -1.0), (110.5, -3.0), (114.5, -4.0), (116.3, -3.5), (117.5, 0.0), (118.9, 1.0),
+     (119.0, 5.0), (117.0, 7.0), (115.5, 5.0), (113.0, 3.2), (111.0, 1.7)],                          # Borneo
+    [(119.5, -5.5), (120.5, 0.5), (124.8, 1.5), (121.5, -1.0), (123.0, -4.5), (121.2, -2.5)],       # Sulawesi
+    [(131.0, -1.0), (135.0, -3.3), (138.0, -1.6), (141.0, -2.6), (144.0, -3.8), (147.5, -6.0), (150.0, -10.5),
+     (147.0, -10.0), (144.0, -8.0), (141.0, -9.0), (138.0, -8.3), (137.5, -5.0), (133.0, -4.0), (132.0, -2.6)],  # N. Guinea
+    [(120.5, 18.5), (122.2, 18.4), (122.0, 16.0), (124.0, 13.0), (120.8, 13.8), (120.0, 16.0)],     # Luzon
+    [(122.0, 8.0), (126.5, 7.0), (125.5, 9.5), (123.5, 8.0)],                                        # Mindanao
+    [(120.2, 22.5), (121.9, 25.2), (121.5, 23.0)],                                                   # Taiwan
+    [(108.6, 19.2), (110.5, 20.1), (111.0, 19.6), (109.6, 18.2)],                                    # Hainan
+    [(130.9, 34.0), (132.0, 33.9), (135.0, 33.5), (137.0, 34.5), (139.8, 34.9), (140.9, 36.0), (141.6, 38.3),
+     (142.0, 39.6), (141.4, 41.4), (140.0, 40.6), (139.8, 38.5), (138.5, 37.4), (136.8, 37.3), (135.7, 35.5),
+     (133.0, 35.5), (131.0, 34.4)],                                                                  # Honshu
+    [(130.0, 32.0), (130.7, 31.0), (131.7, 31.5), (131.9, 33.2), (130.0, 33.8), (129.5, 33.0)],     # Kyushu
+    [(140.0, 42.0), (141.0, 43.3), (141.7, 45.4), (143.5, 44.3), (145.6, 43.3), (143.3, 42.0), (141.0, 41.6)],  # Hokkaido
+    [(142.0, 46.0), (143.5, 49.0), (143.0, 54.0), (142.2, 54.0), (142.0, 50.0)],                     # Sachalin
+    [(144.6, -40.7), (148.3, -40.9), (148.0, -43.2), (146.0, -43.6), (145.0, -42.0)],               # Tasmania
+    [(172.7, -34.4), (175.0, -36.8), (178.5, -37.7), (177.0, -39.3), (176.0, -41.3), (174.8, -41.3), (174.0, -39.0),
+     (173.0, -35.5)],                                                                                # N. Zelanda nord
+    [(172.5, -40.5), (174.3, -41.7), (173.0, -43.5), (171.2, -44.4), (169.0, -46.6), (166.5, -46.0), (168.0, -44.0),
+     (171.0, -42.0)],                                                                                # N. Zelanda sud
+    [(-80.0, 73.0), (-62.0, 66.5), (-65.0, 63.0), (-75.0, 64.5), (-85.0, 70.0)],                    # Baffin
+    [(-120.0, 76.0), (-95.0, 81.0), (-70.0, 82.5), (-80.0, 76.0), (-100.0, 73.0), (-118.0, 71.0)],  # arcipelago artico
+    [(-85.0, 22.0), (-80.0, 23.2), (-74.2, 20.2), (-77.5, 19.9), (-82.0, 21.6)],                    # Cuba
+    [(-74.4, 18.5), (-68.4, 18.6), (-69.9, 19.9), (-72.8, 19.9)],                                    # Hispaniola
+    [(-53.5, 46.6), (-52.6, 47.6), (-55.5, 51.6), (-59.4, 47.6)],                                    # Terranova
+    [(52.0, 71.5), (55.0, 73.5), (60.0, 76.5), (68.0, 77.0), (57.0, 71.5)],                          # Novaja Zemlja
+    [(11.0, 78.5), (17.0, 80.2), (27.0, 80.0), (22.0, 77.5), (16.0, 76.6)],                          # Svalbard
+]
+COSTA_MARI_INTERNI = [
+    [(29.0, 41.15), (28.0, 41.9), (27.9, 42.7), (28.0, 43.3), (28.6, 43.8), (29.7, 45.2), (30.7, 46.5), (31.7, 46.6),
+     (33.5, 46.0), (32.5, 45.4), (33.6, 44.5), (35.0, 44.8), (36.4, 45.25), (35.3, 45.5), (35.4, 46.5), (37.5, 47.1),
+     (39.2, 47.2), (38.2, 46.2), (37.6, 45.6), (36.9, 45.3), (37.0, 45.0), (37.8, 44.7), (39.7, 43.6), (41.6, 41.6),
+     (39.7, 41.0), (36.3, 41.3), (34.9, 42.0), (33.0, 41.9), (31.0, 41.1)],                          # Mar Nero e d'Azov
+    [(26.6, 40.4), (27.5, 40.3), (29.0, 41.0), (28.0, 41.0)],                                        # Mar di Marmara
+    [(47.2, 44.2), (47.8, 45.8), (49.0, 46.5), (51.5, 47.0), (53.0, 46.8), (53.2, 45.3), (51.3, 44.5), (51.5, 43.2),
+     (52.8, 41.8), (53.0, 40.0), (53.9, 38.5), (53.9, 37.3), (51.0, 36.8), (49.0, 37.6), (48.9, 38.4), (49.5, 40.3),
+     (48.6, 41.8), (47.5, 43.0)],                                                                    # Mar Caspio
+    [(-95.0, 58.8), (-92.0, 57.0), (-87.0, 55.5), (-82.3, 52.9), (-79.5, 51.5), (-78.8, 54.5), (-77.0, 58.0),
+     (-78.0, 62.3), (-82.0, 64.5), (-86.0, 64.0), (-90.5, 63.5), (-94.0, 61.0)],                    # Baia di Hudson
+    [(-88.0, 48.3), (-84.5, 46.5), (-82.5, 43.0), (-79.0, 43.4), (-81.5, 45.0), (-87.5, 45.5)],     # Grandi Laghi
+]
+
+# Gli spilli sul mappamondo (lat, lon), senza nome: chi gioca deve sapere dov'è Nizza. Torino, Genova e Marsiglia sono
+# escluse apposta: a questa scala distano 1-2 gradi da Nizza e i loro spilli si sovrapporrebbero.
+CITTA_GLOBO = [("Nizza", 43.70, 7.27), ("Venezia", 45.44, 12.33), ("Roma", 41.90, 12.50), ("Napoli", 40.85, 14.27),
+               ("Parigi", 48.86, 2.35), ("Vienna", 48.21, 16.37), ("Madrid", 40.42, -3.70), ("Londra", 51.51, -0.13)]
+CITTA_GIUSTA = "Nizza"
+
+
+def img_globo(w=2048, h=1024):
+    """Texture equirettangolare del mappamondo: x = longitudine (-180 a sinistra), y = latitudine (nord in alto).
+    Si disegna a dimensione doppia e poi si riduce: così le coste non sono seghettate."""
+    finale = (w, h)
+    w, h = 2 * w, 2 * h
+    mare, mare_basso, terra, costa = (150, 178, 172), (184, 204, 190), (222, 202, 154), (92, 66, 40)
+
+    def P(pts):
+        return [((lon + 180) / 360 * w, (90 - lat) / 180 * h) for lon, lat in pts]
+
+    rnd = random.Random(5)
+    antartide = ([(-180, -90)] + [(lon, -70 + 4 * math.sin(lon * .05) + rnd.uniform(-1.5, 1.5))
+                                  for lon in range(-180, 181, 6)] + [(180, -90)])
+    terre = [COSTA_EURASIA, COSTA_AFRICA, COSTA_NORD_AMERICA, COSTA_SUD_AMERICA, COSTA_AUSTRALIA, COSTA_GROENLANDIA,
+             antartide] + COSTA_ISOLE
+    # bassi fondali: un alone più chiaro lungo le coste
+    alone = Image.new("L", (w, h), 0)
+    da = ImageDraw.Draw(alone)
+    for t in terre:
+        da.polygon(P(t), fill=255)
+    alone = alone.resize((w // 4, h // 4)).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(3))
+    img = Image.composite(Image.new("RGB", (w, h), mare_basso), Image.new("RGB", (w, h), mare), alone.resize((w, h)))
+    d = ImageDraw.Draw(img)
+    for t in terre:
+        d.polygon(P(t), fill=terra)
+        d.line(P(t) + P(t[:1]), fill=costa, width=3)
+    for m in COSTA_MARI_INTERNI:
+        d.polygon(P(m), fill=mare)
+        d.line(P(m) + P(m[:1]), fill=costa, width=3)
+    # meridiani e paralleli ogni 15 gradi, equatore in rosso
+    for lon in range(-180, 181, 15):
+        x = (lon + 180) / 360 * w
+        d.line([(x, 0), (x, h)], fill=(120, 100, 80), width=2)
+    for lat in range(-75, 76, 15):
+        y = (90 - lat) / 180 * h
+        d.line([(0, y), (w, y)], fill=(140, 40, 40) if lat == 0 else (120, 100, 80), width=4 if lat == 0 else 2)
+    img = img.resize(finale, Image.LANCZOS)
+    return _macchie(img, 40, (150, 116, 70), finale[0] // 60, finale[0] // 20, 26, 1860)     # carta un po' ingiallita
+
+
+def img_lettera_bruciata(w=512, h=360):
+    """La lettera mezza bruciata del camino: pergamena con i bordi anneriti, un angolo mangiato dal fuoco
+    e il messaggio cifrato ben leggibile al centro."""
+    img = img_pergamena(w, h, bordo=False, seme=33)
+    d = ImageDraw.Draw(img)
+    rnd = random.Random(1821)
+    for r in range(4):                              # righe di testo illeggibile, in parte bruciate
+        y = 48 + r * 26
+        x, fine = 46 + (36 if r == 0 else 0), w - 50 - rnd.randint(0, 80)
+        pts = []
+        while x < fine:
+            pts.append((x, y + 4 * math.sin(x * .3 + r) + rnd.uniform(-1.2, 1.2)))
+            x += 4
+        d.line(pts, fill=(60, 44, 40), width=2)
+    corpo = 58
+    while corpo > 20 and d.textlength("EXRQL FXJLQL", font=font_pil("b", corpo)) > w * .7:
+        corpo -= 2
+    d.text((w // 2, h * .62), "EXRQL FXJLQL", font=font_pil("b", corpo), fill=(34, 20, 16), anchor="mm")
+    d.line([(w * .18, h * .74), (w * .82, h * .74)], fill=(110, 30, 34), width=3)
+    # contorno frastagliato: un angolo in alto a destra se l'è preso il fuoco
+    contorno = []
+    for i in range(60):                             # lato sinistro, dal basso verso l'alto, poi in alto
+        contorno.append((10 + rnd.uniform(0, 10), h - 10 - (h - 20) * i / 59))
+    for i in range(40):
+        u = i / 39
+        x, y = 10 + (w * .6 - 10) * u, 10 + rnd.uniform(0, 10)
+        contorno.append((x, y))
+    for i in range(50):                             # la bruciatura: una curva dall'alto fino al lato destro
+        u = i / 49
+        x = w * .6 + (w - 10 - w * .6) * u
+        y = h * .42 * math.sin(u * math.pi / 2) ** 1.4 + rnd.uniform(-9, 9) + 6
+        contorno.append((x, max(4, y)))
+    for i in range(50):                             # lato destro e lato inferiore
+        contorno.append((w - 10 - rnd.uniform(0, 10), h * .45 + (h * .55 - 10) * i / 49))
+    for i in range(60):
+        contorno.append((w - 10 - (w - 20) * i / 59, h - 10 - rnd.uniform(0, 10)))
+    maschera = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(maschera).polygon(contorno, fill=255)
+    sfuma = maschera.filter(ImageFilter.GaussianBlur(16))
+    # verso il bordo la carta passa al bruno, al nero e, sul filo, a un'ombra di brace
+    nero = sfuma.point(lambda v: 255 if v < 150 else max(0, int((235 - v) * 3)))
+    img = Image.composite(Image.new("RGBA", (w, h), (26, 14, 8, 255)), img, nero)
+    brace = sfuma.point(lambda v: 150 if 70 < v < 120 else 0).filter(ImageFilter.GaussianBlur(3))
+    img = Image.composite(Image.new("RGBA", (w, h), (170, 70, 24, 255)), img, brace)
+    img.putalpha(maschera)
     return img
 
 
@@ -2134,6 +2447,12 @@ ARC_X0, ARC_X1, ARC_Z0, ARC_Z1 = -17.05, 21.85, -27.4 - SPAZIO_INGRESSO, -4.2   
 ARC_ALTEZZA = 7.5                                               # soffitto molto più alto di quello dello studio
 ALTEZZA_STUDIO = 3.4
 RAGGIO_GIOCATORE = .28
+LARGHEZZA_FRAMMENTI = 1.5            # la pergamena dei frammenti in basso: nove slot a distanza PASSO_SLOT
+PASSO_SLOT = .155
+RAGGIO_GLOBO = .18                    # il mappamondo: 36 cm di diametro
+GLOBO_DISTANZA = (.32, .78, .55)      # modalità globo: distanza della visuale (minima con lo zoom, massima, iniziale)
+GLOBO_BECCHEGGIO = 45                 # quanto si inclina il globo con W-S (gradi, in su e in giù)
+GLOBO_INCLINAZIONE_INIZIALE = -25     # il nord è un po' rivolto verso chi guarda, come un mappamondo visto dall'alto
 LANTERNE_ARCHIVIO = ([(x, -6.2) for x in (-5.6, 2.4, 10.4)]                  # nella fascia d'ingresso, dove sta il Quadro
                      + [(x, z - SPAZIO_INGRESSO) for z in (-8.4, -14.1, -19.8, -25.5)
                         for x in (-13.6, -5.6, 2.4, 10.4, 18.4)])
@@ -3606,6 +3925,8 @@ class Gioco(Entity):
         self.t_ritratto = tex(img_ritratto())
         self.t_spartito = tex(img_spartito())
         self.t_lettera = tex(img_lettera())
+        self.t_lettera_bruciata = tex(img_lettera_bruciata())
+        self.t_globo = tex(img_globo())
         self.t_tappeto = tex(img_tappeto())
         self.t_quadrante = tex(img_quadrante())
         self.t_alone = tex(img_radiale(128), "bilinear")
@@ -3910,17 +4231,65 @@ class Gioco(Entity):
         blocco(r, (-.4, .82, -.01), (.01, .5, .01), col=C(120, 90, 60), rot=(0, 0, -58))
         blocco(r, (.4, .82, -.01), (.01, .5, .01), col=C(120, 90, 60), rot=(0, 0, 58))
         blocco(r, (0, 1.03, -.02), (.05, .05, .05), col=ORO_SCURO, model="sphere")
-        # mobiletto con mappamondo sotto la carta
-        mob = Entity(parent=self.mondo, position=(3.7, 0, -.7), rotation_y=90)
-        blocco(mob, (0, .4, 0), (1.1, .8, .45), texture=self.t_legno)
-        blocco(mob, (0, .81, 0), (1.2, .03, .5), col=LEGNO_SCURO)
-        blocco(mob, (-.3, .9, 0), (.12, .16, .12), col=ORO_SCURO, model=cilindro(10, start=-.5))
-        globo = blocco(mob, (-.3, 1.12, 0), (.3, .3, .3), col=C(170, 150, 110), model="sphere")
-        globo.rotation = (0, 0, 23)
-        self.globo = globo
-        Entity(parent=r, model="cube", collider="box", position=(0, 0, -.2), scale=(1.8, 1.4, .4), visible=False,
+        # la carta si clicca solo sopra il mappamondo (y da 1,32 a 2,5): sotto c'è il collider del globo
+        Entity(parent=r, model="cube", collider="box", position=(0, .11, -.2), scale=(1.8, 1.18, .4), visible=False,
                id_oggetto="mappa")
         self.ostacoli.append((3.35, -1.35, 4.2, -.05))
+        self._costruisci_mappamondo()
+
+    def _costruisci_mappamondo(self):
+        """Il mobiletto sotto la carta con il mappamondo. Gerarchia del globo:
+        base (centro) -> rollio (asse inclinato di 23°) -> beccheggio (W-S nella modalità globo) -> self.globo (gira sul
+        suo asse) -> sfera con la texture e gli spilli delle città, figli del globo così girano con lui."""
+        mob = Entity(parent=self.mondo, position=(3.7, 0, -.7), rotation_y=90)      # avanti (+z locale) = verso il muro
+        self.interattivi["globo"] = mob
+        blocco(mob, (0, .4, 0), (1.1, .8, .45), texture=self.t_legno)
+        blocco(mob, (0, .81, 0), (1.2, .03, .5), col=LEGNO_SCURO)
+        blocco(mob, (-.3, .85, 0), (.16, .05, .16), col=ORO_SCURO, model=cilindro(12, start=-.5))
+        self.globo_base = Entity(parent=mob, position=(-.3, .9 + RAGGIO_GLOBO + .025, 0))
+        rollio = Entity(parent=self.globo_base, rotation_z=23)
+        self.globo_beccheggio = Entity(parent=rollio)
+        self.globo = Entity(parent=self.globo_beccheggio)
+        self.globo_sfera = Entity(parent=self.globo, model="sphere", texture=self.t_globo, scale=2 * RAGGIO_GLOBO,
+                                  collider="sphere")           # copre gli spilli sul lato nascosto
+        self.globo_sfera.set_shader_input("lucido", .5)
+        # meridiano d'ottone: mezzo anello attorno al globo, con i perni ai poli
+        for k in range(41):
+            a = math.radians(-90 + 180 * k / 40)
+            blocco(rollio, (math.cos(a) * (RAGGIO_GLOBO + .016), math.sin(a) * (RAGGIO_GLOBO + .016), 0),
+                   (.011, .011, .011), col=ORO, model="sphere")
+        for y in (-1, 1):
+            blocco(rollio, (0, y * (RAGGIO_GLOBO + .008), 0), (.016, .02, .016), col=ORO_SCURO, model="sphere")
+        piede = Entity(parent=rollio, position=(0, -RAGGIO_GLOBO - .016, 0)).get_position(mob)
+        alto = piede.y - .875
+        blocco(mob, (piede.x, .875 + alto / 2, piede.z), (.022, alto, .022), col=ORO_SCURO, model=cilindro(8, start=-.5))
+        # gli spilli: (lat, lon) -> punto della sfera, secondo la mappatura UV di model="sphere" di Ursina
+        # (u = 0,75 - atan2(x, z) / 360, v = 0,5 + lat / 180): x = cos lat · cos lon, y = sin lat, z = cos lat · sin lon
+        self.spilli = []
+        dirs = {n: self._direzione_globo(la, lo) for n, la, lo in CITTA_GLOBO}
+        vicini = min((dirs[a] - dirs[b]).length() for a in dirs for b in dirs if a < b) * (RAGGIO_GLOBO + .011)
+        raggio_presa = min(.0034, vicini * .48)              # i collider di due spilli vicini non si toccano mai
+        for nome, _, _ in CITTA_GLOBO:
+            d = dirs[nome]
+            # l'asse z dello spillo punta fuori dal globo (look_at di Ursina non va bene qui: il genitore è ruotato)
+            spillo = Entity(parent=self.globo, position=d * RAGGIO_GLOBO,
+                            rotation=(-math.degrees(math.asin(d.y)), math.degrees(math.atan2(d.x, d.z)), 0))
+            blocco(spillo, (0, 0, .0055), (.0011, .0011, .011), col=C(200, 186, 150))         # ago
+            testa = blocco(spillo, (0, 0, .0115), (.0046, .0046, .0046), col=C(196, 28, 40), model="sphere")
+            presa = Entity(parent=spillo, model="sphere", position=(0, 0, .0115), scale=2 * raggio_presa,
+                           collider="sphere", visible=False)
+            presa.citta = nome
+            presa.testa = testa
+            self.spilli.append(presa)
+        self.globo_hitbox = Entity(parent=mob, model="cube", collider="box", position=(0, .655, 0), scale=(1.2, 1.31, .55),
+                                   visible=False, id_oggetto="globo")
+        # punto di vista ravvicinato: davanti al globo, sul suo asse di vista (lo zoom sposta la distanza)
+        self.globo_mob = mob
+
+    @staticmethod
+    def _direzione_globo(lat, lon):
+        la, lo = math.radians(lat), math.radians(lon)
+        return Vec3(math.cos(la) * math.cos(lo), math.sin(la), math.cos(la) * math.sin(lo))
 
     def _costruisci_camino(self):
         r = Entity(parent=self.mondo, position=(0, 0, -3.75), rotation_y=180)     # niente deve sporgere oltre il muro (z = -4.0)
@@ -3940,6 +4309,13 @@ class Gioco(Entity):
         brace = sprite_luminoso(r, (0, .2, .05), (1.4, .8), self.t_alone, C(255, 110, 40, 140))
         self.fiamme.append([brace, None, brace.scale, None, 1.0])
         self.luci.append({"nodo": brace, "col": Vec3(2.4, 1.1, .45), "tremolio": .45, "offset": Vec3(0, .25, 0)})
+        # enigma "La Lettera Bruciata": la lettera cifrata sul piano di pietra, davanti alle braci.
+        # Quando la si inquadra (e quando è risolta) si illumina tutto il camino.
+        self.interattivi["camino"] = r
+        self.lettera_bruciata = blocco(r, (.14, .043, -.3), (.42, 1, .3), texture=self.t_lettera_bruciata,
+                                       col=C(150, 140, 130), rot=(0, -10, 0), model="plane")   # carta più scura: il fuoco la illumina
+        Entity(parent=r, model="cube", collider="box", position=(0, .62, -.22), scale=(1.9, 1.24, .64), visible=False,
+               id_oggetto="camino")
         # orologio da camino e sciabole incrociate
         blocco(r, (.75, 1.72, -.05), (.32, .32, .16), col=C(60, 38, 22), texture=self.t_legno)
         blocco(r, (.75, 1.72, -.135), (.24, .24, .01), texture=self.t_quadrante, model="quad")
@@ -4133,20 +4509,21 @@ class Gioco(Entity):
         self._etichetta_timer = "I GENDARMI ENTRERANNO TRA"
         self.testo_timer = testo_ui(self.hud, formatta_tempo(TEMPO_TOTALE), (0, .42), 2.9, ORO_CHIARO, "b", z=-.01)
         self.barra_tempo = quad_ui(self.hud, (0, .364), (.3, .008), ORO)
-        # frammenti
-        quad_ui(self.hud, (0, -.425), (1.34, .15), color.white, self.t_pergamena_larga)
-        testo_ui(self.hud, "FRAMMENTI DELLA CHIAVE", (0, -.375), .75, BORDEAUX_SCURO, "b", z=-.01)
+        # frammenti: nove slot, uno per lettera; il gruppo si rimpicciolisce se la finestra è più stretta della pergamena
+        self.hud_frammenti = Entity(parent=self.hud, y=-.425)
+        hf = self.hud_frammenti
+        quad_ui(hf, (0, 0), (LARGHEZZA_FRAMMENTI, .15), color.white, self.t_pergamena_larga)
+        testo_ui(hf, "FRAMMENTI DELLA CHIAVE", (0, .05), .75, BORDEAUX_SCURO, "b", z=-.01)
         self.slot = []
         self.slot_nomi = {}
         for i, e in enumerate(ENIGMI):
-            x = (i - (N_ENIGMI - 1) / 2) * .17
-            quad_ui(self.hud, (x, -.432), (.135, .065), color.white, self.t_slot, z=-.01)
-            t = testo_ui(self.hud, "? ? ?", (x, -.43), 1.3, C(150, 124, 90), "b", z=-.02)
-            self.slot_nomi[e["id"]] = testo_ui(self.hud, e.get("nome_nascosto", e["nome"]), (x, -.478), .6,
-                                               C(110, 84, 60), "i", z=-.02)
+            x = (i - (N_ENIGMI - 1) / 2) * PASSO_SLOT
+            quad_ui(hf, (x, -.007), (.125, .065), color.white, self.t_slot, z=-.01)
+            t = testo_ui(hf, "?", (x, -.005), 1.3, C(150, 124, 90), "b", z=-.02)
+            self.slot_nomi[e["id"]] = testo_ui(hf, self._nome_slot(e), (x, -.053), .6, C(110, 84, 60), "i", z=-.02)
             self.slot.append(t)
             if i < N_ENIGMI - 1:
-                testo_ui(self.hud, "+", (x + .085, -.43), 1.5, BORDEAUX, "b", z=-.02)
+                testo_ui(hf, "+", (x + PASSO_SLOT / 2, -.005), 1.3, BORDEAUX, "b", z=-.02)
         # mirino e suggerimenti
         self.mirino = Entity(parent=self.hud, model=Circle(16), scale=.008, color=C(240, 230, 210, 180))
         self.mirino_anello = Entity(parent=self.hud, model=Circle(24, mode="line", thickness=2), scale=.03,
@@ -4159,7 +4536,7 @@ class Gioco(Entity):
         self.toast_t0 = -100
         self.aiuto = testo_ui(self.hud, "WASD: muoviti (Maiusc: corri)  ·  Spazio: salta  ·  Ctrl: accovacciati  ·  Mouse: guarda  ·  Clic: esamina\n"
                               "Esc: pausa  ·  M: audio  ·  C: mappa  ·  F11: schermo intero",
-                              (0, -.49), .65, C(190, 170, 140), "i", (.5, -.5))
+                              (0, .345), .65, C(190, 170, 140), "i", (.5, .5))      # in alto a destra, sotto il timer
         self.guida_piano = Entity(parent=ui, enabled=False)
         quad_ui(self.guida_piano, (0, -.265), (1.25, .15), C(8, 6, 8, 180))
         testo_ui(self.guida_piano, "A Do   S Re   D Mi   F Fa   G Sol   H La   J Si   K Do   L Re      (neri: W E T Y U O P)",
@@ -4170,6 +4547,14 @@ class Gioco(Entity):
         for k in range(len(INNO)):
             self.pallini_inno.append(quad_ui(self.guida_piano, ((k - (len(INNO) - 1) / 2) * .036, -.3), (.022, .022),
                                              C(90, 80, 70), z=-.01))
+        # modalità globo: in alto la domanda e i comandi
+        self.guida_globo = Entity(parent=ui, enabled=False)
+        quad_ui(self.guida_globo, (0, .29), (1.3, .135), C(8, 6, 8, 185))
+        e = ENIGMI_PER_ID["globo"]
+        testo_ui(self.guida_globo, e["titolo"].upper(), (0, .34), .85, ORO, "b", z=-.01)
+        testo_ui(self.guida_globo, "«" + e["domanda"] + "»", (0, .298), .88, PERGAMENA, "i", wordwrap=90, z=-.01)
+        testo_ui(self.guida_globo, "Trascina col mouse o usa A-D / frecce per girarlo  ·  W-S: inclina  ·  rotellina: zoom  ·  "
+                 "clic su uno spillo per indicare la città  ·  Esc per uscire", (0, .247), .7, ORO_CHIARO, "b", z=-.01)
         self.pausa = Entity(parent=ui, enabled=False, z=-3)
         quad_ui(self.pausa, (0, 0), (4, 1.2), C(0, 0, 0, 170))
         testo_ui(self.pausa, "IN PAUSA", (0, .06), 3, ORO, "b", z=-.01)
@@ -4292,6 +4677,12 @@ class Gioco(Entity):
         if getattr(self, "al_piano", False):
             self.alzati()
         self.al_piano = False
+        if getattr(self, "al_globo", False):
+            self.esci_dal_globo()
+        self.al_globo = False
+        self.trascina_globo = False
+        self.distanza_globo = GLOBO_DISTANZA[2]
+        self.globo_beccheggio.rotation_x = GLOBO_INCLINAZIONE_INIZIALE
         self.pos = Vec3(0, 0, -1.9)
         self.yaw, self.pitch = 0.0, 0.0
         self.passo = 0.0
@@ -4308,7 +4699,7 @@ class Gioco(Entity):
             destroy(e)
         self.etichette_risolte = []
         for i, t in enumerate(self.slot):
-            t.text = "? ? ?"
+            t.text = "?"
             t.color = C(150, 124, 90)
             t.scale = 1.3
         self.velo_colore.color = C(255, 240, 200, 0)
@@ -4328,7 +4719,12 @@ class Gioco(Entity):
         self.epica.nascondi()
         camera.fov = 75
         for e in ENIGMI:
-            self.slot_nomi[e["id"]].text = e.get("nome_nascosto", e["nome"])
+            self.slot_nomi[e["id"]].text = self._nome_slot(e)
+
+    @staticmethod
+    def _nome_slot(e):
+        """Il nome sotto lo slot dell'HUD: '???' per gli enigmi dell'archivio ancora segreto."""
+        return e.get("nome_nascosto", e.get("nome_hud", e["nome"]))
 
     def _mostra_intro(self):
         self.stato = "intro"
@@ -4383,6 +4779,8 @@ class Gioco(Entity):
             pass
         elif oid in self.risolti:
             self.mostra_toast("Hai già svelato il segreto: frammento «%s»." % ENIGMI_PER_ID[oid]["frammento"], PERGAMENA)
+        elif oid == "globo":
+            self.avvicinati_al_globo()
         else:
             self.apri_modale(ENIGMI_PER_ID[oid])
 
@@ -4404,7 +4802,7 @@ class Gioco(Entity):
 
     def puo_notificare_vittoria(self):
         """Il treno è arrivato: la schermata epica può aprirsi solo se non c'è altro (una finestra, il piano) davanti."""
-        return self.stato == "gioco" and not self.modale.enabled and not self.al_piano
+        return self.stato == "gioco" and not self.modale.enabled and not self.al_piano and not self.al_globo
 
     def _treno_vinto(self):
         """Cavour è arrivato a Plombières: il timer si ferma e si apre la Vittoria Epica."""
@@ -4443,7 +4841,7 @@ class Gioco(Entity):
             pass
 
     def _avvia_passaggio(self):
-        """Dopo i primi cinque enigmi la libreria scorre di lato e rivela l'archivio segreto."""
+        """Dopo i primi sette enigmi la libreria scorre di lato e rivela l'archivio segreto."""
         if self.stato != "gioco" or self.stanza_segreta.aperta:
             return
         self.passaggio_in_attesa = False
@@ -4531,6 +4929,80 @@ class Gioco(Entity):
         self.pannello.x = 0
         self._blocca_mouse(False)
         self._risolvi(ENIGMI_PER_ID["inno"])
+
+    # ------------------------------------------------------------------ modalità globo
+    def avvicinati_al_globo(self):
+        """Clic sul mappamondo: la visuale si avvicina (come al pianoforte), il mouse si libera e il globo smette di
+        girare da solo. Lo si gira trascinando o coi tasti e si clicca lo spillo della città giusta."""
+        self._pulisci_mira()
+        self.al_globo = True
+        self.trascina_globo = False
+        self.distanza_globo = GLOBO_DISTANZA[2]
+        self.globo_hitbox.collider = None              # così il mouse "vede" gli spilli
+        self.globo.set_shader_input("emissione", Vec3(.55, .5, .42))    # da vicino il globo si legge bene
+        self.guida_globo.enabled = True
+        self.toast_t0 = -100
+        self._blocca_mouse(False)
+        self.suoni.suona("click")
+
+    def esci_dal_globo(self):
+        self.al_globo = False
+        self.trascina_globo = False
+        self.globo_hitbox.collider = "box"
+        self.globo.clearShaderInput("emissione")
+        self.guida_globo.enabled = False
+        self._evidenzia_spillo(None)
+        self.t_chiusura = time.monotonic()              # lo stesso clic non deve riaprire subito il globo
+        if self.stato == "gioco" and not self.modale.enabled:
+            self._blocca_mouse(True)
+
+    def _occhi_globo(self):
+        """Dove sta la visuale nella modalità globo: davanti al globo, a distanza_globo dal centro."""
+        return self.globo_base.world_position - self.globo_mob.forward * self.distanza_globo
+
+    def _aggiorna_globo(self, dt):
+        camera.position = lerp(camera.position, self._occhi_globo(), min(1, dt * 6))
+        # si guarda un poco sopra il centro: il globo scende sotto il riquadro con la domanda
+        camera.look_at(self.globo_base.world_position + Vec3(0, self.distanza_globo * .11, 0))
+        lento = self.distanza_globo / GLOBO_DISTANZA[2]            # da vicino il globo gira più piano
+        giro = held_keys["d"] + held_keys["right arrow"] - held_keys["a"] - held_keys["left arrow"]
+        incl = held_keys["w"] + held_keys["up arrow"] - held_keys["s"] - held_keys["down arrow"]
+        self.globo.rotation_y -= giro * 90 * dt * lento
+        b = self.globo_beccheggio.rotation_x + incl * 60 * dt * lento
+        if self.trascina_globo and mouse.left:                     # trascinando, il punto preso segue il mouse
+            self.globo.rotation_y -= mouse.velocity[0] * 260 / window.aspect_ratio * lento   # Ursina divide solo la y per l'aspetto
+            b += mouse.velocity[1] * 260 * lento
+        self.globo_beccheggio.rotation_x = max(-GLOBO_BECCHEGGIO, min(GLOBO_BECCHEGGIO, b))
+        h = mouse.hovered_entity
+        self._evidenzia_spillo(h if getattr(h, "citta", None) else None)
+
+    def _evidenzia_spillo(self, presa):
+        for p in self.spilli:
+            sopra = p is presa
+            p.testa.color = ORO_CHIARO if sopra else C(196, 28, 40)
+            p.testa.scale = .0046 * (1.35 if sopra else 1.0)
+
+    def _clic_globo(self):
+        citta = getattr(mouse.hovered_entity, "citta", None)
+        if citta is None:
+            self.trascina_globo = True                  # clic sul globo (o accanto): si trascina
+        elif citta == CITTA_GIUSTA:
+            self._globo_risolto()
+        else:
+            self.suoni.suona("sbagliato")
+            self.mostra_toast("Questa è %s… non è la città che cerchi." % citta, ROSSO_ALLARME)
+
+    def _globo_risolto(self):
+        """Nizza: si torna in piedi e si apre la ricompensa standard (frammento e curiosità), come per l'inno."""
+        if self.stato != "gioco" or "globo" in self.risolti:
+            return
+        self.esci_dal_globo()
+        self.via_terminale = False
+        self.enigma_aperto = ENIGMI_PER_ID["globo"]
+        self.modale.enabled = True
+        self.pannello.x = 0
+        self._blocca_mouse(False)
+        self._risolvi(ENIGMI_PER_ID["globo"])
 
     def apri_terminale(self):
         """Il Quadro di Comando è bloccato: qui si digita il codice ricavato dai fascicoli a terra."""
@@ -4665,7 +5137,12 @@ class Gioco(Entity):
         self.m_titolo.color = VERDE_SCURO
         self.r_frammento.text = enigma["frammento"]
         self.r_frammento.scale = 2.0 if len(enigma["frammento"]) > 2 else 3.0
-        self.r_curiosita.text = avvolgi(enigma["curiosita"], 58)
+        # le curiosità lunghe (Nizza) usano un corpo più piccolo: il testo non deve arrivare al pulsante Continua
+        for scala in (1.2, 1.1, 1.0, .92, .85):
+            self.r_curiosita.text = avvolgi(enigma["curiosita"], int(58 * 1.2 / scala))
+            if self.r_curiosita.height * scala <= .17:        # height = righe x altezza di riga, a scala 1
+                break
+        self.r_curiosita.scale = scala
         self.r_sigillo.scale = .05
         self.r_sigillo.animate_scale(.24, duration=.35, curve=curve.out_back)
         self._segna_risolto(enigma)
@@ -4686,6 +5163,10 @@ class Gioco(Entity):
         cima = colli[0].world_position + Vec3(0, colli[0].world_scale_y / 2 + .15, 0) if colli else radice.world_position
         if eid == "inno":
             cima += Vec3(0, .32, 0)
+        elif eid == "globo":
+            cima = self.globo_base.world_position + Vec3(0, RAGGIO_GLOBO + .17, 0)
+        elif eid == "camino":                      # sopra la lettera, davanti alle braci
+            cima = self.lettera_bruciata.world_position + Vec3(0, .38, 0)
         elif eid == "libreria":
             cima += Vec3(0, .45, 0)
         elif eid == "treno":                       # il sigillo sta sopra la consolle, non in mezzo al plastico
@@ -4726,6 +5207,8 @@ class Gioco(Entity):
         self.tempo_congelato = self.tempo_rimasto()
         if self.al_piano:
             self.alzati()
+        if self.al_globo:
+            self.esci_dal_globo()
         self.stato = "fuga"
         self.t_evento = time.monotonic()
         self._blocca_mouse(False)
@@ -4774,6 +5257,8 @@ class Gioco(Entity):
         self.tempo_congelato = 0.0
         if self.al_piano:
             self.alzati()
+        if self.al_globo:
+            self.esci_dal_globo()
         self.treno.disattiva()                    # se il tempo scade mentre si gioca al plastico
         self.epica.nascondi()
         camera.fov = 75
@@ -4797,7 +5282,7 @@ class Gioco(Entity):
     def sconfitta(self):
         self.stato = "sconfitta"
         self.s_frammenti.text = "Frammenti della chiave recuperati: %d/%d" % (len(self.risolti), N_ENIGMI)
-        self.s_lista.text = "   ".join(e["frammento"] if e["id"] in self.risolti else "???" for e in ENIGMI)
+        self.s_lista.text = "  ".join(e["frammento"] if e["id"] in self.risolti else "?" for e in ENIGMI)
         self.sconfitta_ui.enabled = True
 
     # ------------------------------------------------------------------ input
@@ -4811,6 +5296,8 @@ class Gioco(Entity):
                 self.chiudi_modale()
             elif self.al_piano:
                 self.alzati()
+            elif self.al_globo:
+                self.esci_dal_globo()
             elif self.stato == "gioco" and mouse.locked:
                 self._blocca_mouse(False)
             return
@@ -4836,6 +5323,18 @@ class Gioco(Entity):
                 self.suona_tasto(TASTI_PIANO[key])
             elif key == "left mouse down" and getattr(mouse.hovered_entity, "nota", None):
                 self.suona_tasto(mouse.hovered_entity.nota)
+            return
+        if self.al_globo:
+            if key == "left mouse down":
+                self._clic_globo()
+            elif key == "left mouse up":
+                self.trascina_globo = False
+            elif key in ("scroll up", "scroll down"):
+                passo = -.05 if key == "scroll up" else .05
+                self.distanza_globo = max(GLOBO_DISTANZA[0], min(GLOBO_DISTANZA[1], self.distanza_globo + passo))
+            elif key == "m":
+                self.suoni.attivo = not self.suoni.attivo
+                self.suoni.ambiente(self.suoni.attivo)
             return
         if key == "p" and self.mirato == "pianoforte" and mouse.locked:
             self.siediti_al_piano()
@@ -4883,6 +5382,8 @@ class Gioco(Entity):
                     if self.al_piano:
                         camera.position = lerp(camera.position, self.piano_occhi.world_position, min(1, dt * 6))
                         camera.look_at(self.piano_mira.world_position)
+                    elif self.al_globo:
+                        self._aggiorna_globo(dt)
                     else:
                         if not self.modale.enabled and mouse.locked:
                             self._muovi(dt)
@@ -5042,6 +5543,8 @@ class Gioco(Entity):
             self.suggerimento.text = e["nome"]
             self.suggerimento2.text = ("Risolto  ·  frammento «%s»" % e["frammento"] if mirato in self.risolti else
                                        "Clic per analizzare  ·  il codice va nel Quadro" if mirato == "libreria" else
+                                       "Clic per avvicinarti e girarlo" if mirato == "globo" else
+                                       "Clic per esaminare la lettera tra le braci" if mirato == "camino" else
                                        "Clic per esaminare")
             if mirato == "pianoforte":
                 self.suggerimento2.text += ("   ·   P: suona" if "inno" in self.risolti else
@@ -5102,7 +5605,8 @@ class Gioco(Entity):
         # le lancette dell'orologio da camino segnano il tempo che resta
         self.lancette[0].rotation_z = -(rimasto / 3600) * 360
         self.lancette[1].rotation_z = -(rimasto % 60) * 6
-        self.globo.rotation_y += dt * 12
+        if not self.al_globo:                       # gira da solo, tranne quando lo si gira a mano
+            self.globo.rotation_y += dt * 12
         self.suoni.volume_camino((camera.world_position - Vec3(0, 1, -3.6)).length())
         for k, e in enumerate(self.etichette_risolte):
             e.y = e.y0 + .04 * math.sin(t * 2 + k // 2)
@@ -5115,9 +5619,12 @@ class Gioco(Entity):
         for e in (self.pannello_timer, self.etichetta_timer, self.testo_timer, self.barra_tempo):
             e.x = a / 2 - .18
         self.aiuto.x = a / 2 - .02
+        k = min(1.0, (a - .04) / LARGHEZZA_FRAMMENTI)          # finestra stretta: la pergamena dei frammenti si riduce
+        self.hud_frammenti.scale = k
+        self.hud_frammenti.y = -.5 + .075 * k
         # la pianta della ferrovia compare nell'archivio (C: nascondi / mostra)
         in_archivio = (self.stato == "gioco" and self.stanza_segreta.aperta and not self.modale.enabled and not self.al_piano
-                       and self.stanza_segreta.nell_archivio(self.pos.x, self.pos.z))
+                       and not self.al_globo and self.stanza_segreta.nell_archivio(self.pos.x, self.pos.z))
         mm = self.treno.minimappa
         mm.enabled = in_archivio and self.mostra_mappa
         if mm.enabled:
@@ -5149,9 +5656,11 @@ class Gioco(Entity):
             alpha = 1.0 if eta < 3.2 else (4.0 - eta) / .8
             self.toast.alpha = alpha
             self.toast_sfondo.alpha = .8 * alpha
-        self.pausa.enabled = self.stato == "gioco" and not self.modale.enabled and not mouse.locked and not self.al_piano
-        self.mirino.enabled = self.stato == "gioco" and not self.modale.enabled and not self.al_piano
-        if self.al_piano:
+        ravvicinato = self.al_piano or self.al_globo
+        self.aiuto.enabled = not ravvicinato                    # al piano e al globo valgono i comandi della loro guida
+        self.pausa.enabled = self.stato == "gioco" and not self.modale.enabled and not mouse.locked and not ravvicinato
+        self.mirino.enabled = self.stato == "gioco" and not self.modale.enabled and not ravvicinato
+        if ravvicinato:
             self.mirino_anello.enabled = self.sugg_sfondo.enabled = False
             self.suggerimento.text = self.suggerimento2.text = ""
         if self.scuoti > 0:

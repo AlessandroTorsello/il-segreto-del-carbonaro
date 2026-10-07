@@ -7,7 +7,8 @@ radice della repository (`il_segreto_del_carbonaro_3d.py`), con in più:
 - alcune **ottimizzazioni** che fanno girare il gioco più fluido anche a grafica massima;
 - uno script (`crea_exe.bat`) per ottenere un **eseguibile Windows** senza installare Python.
 
-La versione 3D originale e la versione 2D nella radice non sono state toccate.
+Il menu Grafica e le ottimizzazioni ci sono solo qui; gli enigmi (nove, compresi il Mappamondo e la Lettera
+Bruciata) e il timer di 25 minuti sono gli stessi della 3D originale.
 
 ## Avvio dal codice
 
@@ -21,7 +22,9 @@ python il_segreto_del_carbonaro_finale.py
 
 Comandi di gioco: WASD / frecce per muoversi · Maiusc corri · Spazio salta · Ctrl accovacciati · mouse per guardare ·
 clic per esaminare gli oggetti · Invio per confermare · **Esc: pausa** · M audio · C pianta della ferrovia ·
-F11 schermo intero · R per rigiocare a fine partita. Tutta la storia e le soluzioni sono nel README della radice.
+F11 schermo intero · R per rigiocare a fine partita. Al mappamondo: trascina (o A-D / frecce) per girarlo · W-S
+inclina · rotellina zoom · clic su uno spillo · Esc per tornare in piedi. Tutta la storia e le soluzioni sono nel
+README della radice.
 
 ## Menu Grafica
 

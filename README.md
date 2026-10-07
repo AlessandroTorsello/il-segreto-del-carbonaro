@@ -8,7 +8,7 @@ Escape room ambientata nel Risorgimento, in **due versioni** Python:
 | **2D** | `il_segreto_del_carbonaro.py` | pygame | Punta e clicca con finestre modali |
 | **3D finale** | [`finale/`](finale/) | Ursina (Panda3D) | Come la 3D, con menu Grafica (Bassa / Media / Alta / Max) nella pausa, più fluida e con l'eseguibile Windows nella pagina [Releases](https://github.com/AlessandroTorsello/il-segreto-del-carbonaro/releases) |
 
-> **Torino, 4 maggio 1860.** Sei un corriere della Carboneria, chiuso nello studio segreto di un patriota mentre i gendarmi forzano l'ingresso. Hai **15 minuti** (20 nella versione 3D) per decifrare i codici nascosti negli oggetti della stanza, ricomporre la parola d'ordine e fuggire prima che Garibaldi salpi da Quarto.
+> **Torino, 4 maggio 1860.** Sei un corriere della Carboneria, chiuso nello studio segreto di un patriota mentre i gendarmi forzano l'ingresso. Hai **25 minuti** per decifrare i codici nascosti negli oggetti della stanza, ricomporre la parola d'ordine e fuggire prima che Garibaldi salpi da Quarto.
 
 ## Versione 3D (consigliata)
 
@@ -23,19 +23,23 @@ python il_segreto_del_carbonaro_3d.py
 
 **Comandi:** WASD / frecce per muoverti · Maiusc per correre · Spazio per saltare · Ctrl per accovacciarti · mouse per guardarti intorno · clic sull'oggetto inquadrato dal mirino per esaminarlo · Invio per confermare · Esc per chiudere o mettere in pausa · M per l'audio · C per mostrare/nascondere la pianta della ferrovia · F11 per lo schermo intero · R per rigiocare a fine partita.
 
-**Come si gioca:** la parola d'ordine **OBBEDISCO** è divisa in sette frammenti (OB · BE · D · I · S · C · O).
+**Comandi del mappamondo:** trascina col mouse (o A-D / frecce) per girarlo · W-S per inclinarlo · rotellina per lo zoom · clic su uno spillo per indicare la città · Esc per tornare in piedi.
 
-1. **Nello studio** si risolvono cinque enigmi: pianoforte, spartito dell'inno, mappa, ritratto e scrivania.
-2. Risolti i cinque, la libreria di destra scorre di lato e rivela l'**archivio segreto**, dove aspettano gli ultimi due frammenti:
+**Come si gioca:** la parola d'ordine **OBBEDISCO** è divisa in nove frammenti, una lettera per enigma (O · B · B · E · D · I · S · C · O).
+
+1. **Nello studio** si risolvono sette enigmi: pianoforte, spartito dell'inno, mappa, mappamondo, camino, ritratto e scrivania.
+   - **Il Mappamondo:** cliccandolo non si apre una finestra: la visuale si avvicina al globo, come quando ci si siede al pianoforte. Sul globo ci sono otto spilli senza nome: bisogna girarlo e cliccare la città che Cavour cedette alla Francia insieme alla Savoia. Uno spillo sbagliato mostra il nome della città.
+   - **La Lettera Bruciata:** tra le braci del camino c'è una lettera mezza bruciata, scritta con il cifrario di Cesare (ogni lettera spostata di tre posti in avanti).
+2. Risolti i sette, la libreria di destra scorre di lato e rivela l'**archivio segreto**, dove aspettano gli ultimi due frammenti:
    - **Analizza fascicoli:** i quattro fascicoli sparsi a terra vanno messi in ordine cronologico. Prendendo l'ultima cifra di ogni anno si ottiene un codice, che però va **digitato nel Quadro di Comando Ferroviario**: finché non lo inserisci, il quadro resta bloccato.
    - **Il Treno Diplomatico:** a quadro acceso si girano gli scambi e si porta Cavour da Torino a Plombières, evitando le spie austriache e i binari rossi che portano a Vienna.
-3. Con tutti e sette i frammenti cadono le catene della porta d'uscita: basta inserire la parola d'ordine.
+3. Con tutti e nove i frammenti cadono le catene della porta d'uscita: basta inserire la parola d'ordine.
 
 **Comandi dell'archivio** (a Quadro acceso): clic su uno scambio, oppure i tasti **1–7** da qualsiasi punto, lo ruotano di 90° · **Invio** (o la leva verde) fa partire il treno · **R** (o la leva rossa) rimette gli scambi come all'inizio. In alto a sinistra compare la pianta della ferrovia con la tua posizione, il treno e gli scambi numerati.
 
 **Cosa contiene:**
 - Studio ottocentesco esplorabile: carta da parati damascata, boiserie, parquet, travi a vista, tappeto, camino acceso con sciabole incrociate, librerie ben illuminate, lampadario a candele.
-- Oggetti degli enigmi in 3D: pianoforte a coda con lo spartito del *Canto degli Italiani*, mappa della Spedizione dei Mille con mappamondo, ritratto del Re in cornice dorata con corona, scrivania con lettera, calamaio, penna d'oca e candela.
+- Oggetti degli enigmi in 3D: pianoforte a coda con lo spartito del *Canto degli Italiani*, mappa della Spedizione dei Mille, mappamondo che si gira con il mouse (texture del mondo disegnata dal codice, otto spilli che girano con il globo), lettera cifrata mezza bruciata sul focolare del camino, ritratto del Re in cornice dorata con corona, scrivania con lettera, calamaio, penna d'oca e candela.
 - **Archivio segreto:** una sala enorme con lanterne appese, lampioni e librerie, e una ferrovia a grandezza d'uomo sul pavimento, con ponti sotto cui si cammina a testa alta, rampe, passaggi a livello, case, alberi, montagne, spie e le stazioni di Torino, Plombières e Vienna.
 - Quadro di Comando con lampada, targa retroilluminata, due leve, e controlli da tastiera.
 - Porta d'uscita sbarrata da catene e lucchetto: quando risolvi tutti gli enigmi le catene cadono. Con la parola d'ordine giusta la porta si apre e la telecamera esce verso la luce.
@@ -46,7 +50,7 @@ python il_segreto_del_carbonaro_3d.py
 - **Enigma dell'inno:** sul leggio c'è lo spartito dell'inizio del *Canto degli Italiani*, che Novaro compose proprio a Torino nel 1847. Suonalo per intero e ottieni un frammento della chiave. Una fila di pallini mostra quante note giuste hai suonato, e una nota sbagliata fa ripartire da capo.
 - Musica di sottofondo di leggera suspense, composta e sintetizzata dal codice: loop in Re minore con basso pizzicato, arpeggi, archi morbidi, carillon e tic-tac. Il crepitio del camino si sente di più solo quando ti avvicini al fuoco.
 - Texture generate con PIL e suoni sintetizzati: nessun file esterno. Con M spegni musica ed effetti.
-- Timer di 20:00 in tempo reale (15:00 nella versione 2D). Nell'ultimo minuto diventa rosso e ticchetta. Allo scadere i gendarmi sfondano la porta.
+- Timer di 25:00 in tempo reale (anche nella versione 2D). Nell'ultimo minuto diventa rosso e ticchetta. Allo scadere i gendarmi sfondano la porta.
 
 | Intro | Enigma | Mappa |
 |---|---|---|
@@ -74,7 +78,7 @@ python il_segreto_del_carbonaro_3d.py
 
 ## Versione 2D (pygame)
 
-La versione 2D è più breve: quattro enigmi, senza archivio segreto né ferrovia.
+La versione 2D è più breve: sei enigmi, senza archivio segreto né ferrovia.
 
 ### Installazione e avvio
 
@@ -97,16 +101,20 @@ I font usati sono quelli di sistema (Georgia, Palatino, Times… con fallback au
 | Clic su un oggetto | Apre l'enigma |
 | Invio | Conferma la risposta |
 | Esc | Chiude la finestra dell'enigma (a fine partita esce dal gioco) |
+| Mappamondo: trascina, A-D / frecce | Gira il globo |
+| Mappamondo: W-S / su-giù | Inclina il globo |
+| Mappamondo: rotellina | Zoom (tre livelli) |
 | M | Audio on/off |
 | F11 | Schermo intero / finestra |
 | R | Nuova partita (dalla schermata di vittoria o di game over) |
 
 ### Come si gioca
 
-1. Nella stanza ci sono quattro oggetti (**Pianoforte, Mappa, Ritratto, Scrivania**) e la **Porta Uscita**.
+1. Nella stanza ci sono sei oggetti (**Pianoforte, Mappa, Mappamondo, Camino, Ritratto, Scrivania**) e la **Porta Uscita**.
+   Il mappamondo non ha un campo di testo: si gira il globo e si clicca lo spillo della città giusta.
 2. Cliccando un oggetto si apre il suo indovinello. La risposta non tiene conto di maiuscole, accenti, punteggiatura e spazi in più.
 3. Ogni risposta esatta sblocca un **frammento della chiave** e una **curiosità storica**. L'oggetto risolto diventa verde e oro e non è più cliccabile.
-4. La porta resta sbarrata (con catene e lucchetto) finché non risolvi tutti e quattro gli enigmi.
+4. La porta resta sbarrata (con catene e lucchetto) finché non risolvi tutti e sei gli enigmi.
 5. Poi clicca la porta e inserisci la parola d'ordine unendo i frammenti.
 6. Se il timer arriva a **00:00** prima della fuga, i gendarmi sfondano la porta: **Game Over**.
 
@@ -115,7 +123,7 @@ Nell'ultimo minuto il timer diventa rosso, pulsa e ticchetta.
 ### Caratteristiche tecniche
 
 - **Un solo file Python** (`il_segreto_del_carbonaro.py`); unica dipendenza: `pygame`.
-- **Grafica procedurale**: carta da parati damascata, boiserie, porta ad arco in pietra, pianoforte con note animate, mappa d'Italia con la rotta dei Mille, ritratto del Re, scrivania con candela tremolante, sigilli di ceralacca, polvere nella luce delle candele, vignettatura.
+- **Grafica procedurale**: carta da parati damascata, boiserie, porta ad arco in pietra, pianoforte con note animate, mappa d'Italia con la rotta dei Mille, mappamondo che si gira (proiezione calcolata pixel per pixel su una texture del mondo disegnata dal codice), camino con la lettera bruciata, ritratto del Re, scrivania con candela tremolante, sigilli di ceralacca, polvere nella luce delle candele, vignettatura.
 - **Audio sintetizzato** al volo (click, arpeggio di vittoria, errore, catene, ticchettio, fanfara, porta sfondata). Se il computer non ha una scheda audio il gioco funziona lo stesso, in silenzio.
 - **Timer in tempo reale** basato sull'orologio di sistema, non sui frame: resta preciso anche se il PC rallenta. Si ferma alla vittoria.
 - **Finestra ridimensionabile**: il gioco è disegnato a 1280×800 e scalato mantenendo le proporzioni. Sugli schermi piccoli la finestra si adatta da sola.
@@ -136,9 +144,11 @@ Nell'ultimo minuto il timer diventa rosso, pulsa e ticchetta.
 
 | Oggetto | Risposta | Frammento 2D | Frammento 3D |
 |---|---|---|---|
-| Pianoforte | VERDI | OBBE | OB |
-| Inno (solo 3D) | suonare Re Re Mi Re Si Si Do Si Si Re Do Si La Si La Sol | — | BE |
-| Mappa | 1089 | DI | D |
+| Pianoforte | VERDI | OB | O |
+| Inno (solo 3D) | suonare Re Re Mi Re Si Si Do Si Si Re Do Si La Si La Sol | — | B |
+| Mappa | 1089 | B | B |
+| Mappamondo | cliccare lo spillo di NIZZA | E | E |
+| Camino (Lettera Bruciata) | BUONI CUGINI (EXRQL FXJLQL decifrato, anche solo CUGINI) | DI | D |
 | Fascicoli (solo 3D) | 8690, da digitare nel Quadro di Comando | — | I |
 | Ritratto | 2 | S | S |
 | Scrivania | BLU BIANCO ROSSO (in qualsiasi ordine) | CO | C |

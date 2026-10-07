@@ -12,9 +12,14 @@ nessuna immagine, font o file audio esterno.
 
 Comandi:  clic = esamina un oggetto · Invio = conferma · Esc = chiudi
           M = audio on/off · F11 = schermo intero · R = rigioca (a fine partita)
+          Mappamondo: trascina (o A-D / frecce) per girarlo · W-S inclina · rotellina = zoom · clic su uno spillo
+
+La parola d'ordine OBBEDISCO è divisa in sei frammenti (OB · B · E · DI · S · CO), uno per ciascuno
+dei sei oggetti dello studio: pianoforte, mappa, mappamondo, camino, ritratto e scrivania.
 """
 
 import math
+import operator
 import random
 import re
 import sys
@@ -30,7 +35,7 @@ import pygame
 # --------------------------------------------------------------------------
 W, H = 1280, 800                 # risoluzione logica (scalata alla finestra)
 FPS = 60
-TEMPO_TOTALE = 15 * 60           # 15:00
+TEMPO_TOTALE = 25 * 60           # 25:00
 MAX_INPUT = 32
 
 # Palette "Dark Academia / Risorgimento"
@@ -72,7 +77,7 @@ ENIGMI = [
                     "austriaci, lodando un compositore. Ma è l'acronimo del "
                     "futuro Re d'Italia. Chi è il musicista?"),
         "soluzioni": ["verdi", "giuseppe verdi", "viva verdi"],
-        "frammento": "OBBE",
+        "frammento": "OB",
         "curiosita": ("La polizia austriaca mandava ogni notte agenti a cancellare le scritte "
                       "«Viva V.E.R.D.I.», ma il giorno dopo ricomparivano: non si poteva "
                       "vietare di inneggiare a un compositore amatissimo."),
@@ -85,10 +90,38 @@ ENIGMI = [
                     "volontari salparono davvero da Quarto? "
                     "(Tra loro c'era una donna)."),
         "soluzioni": ["1089", "1 089"],
-        "frammento": "DI",
+        "frammento": "B",
         "curiosita": ("La donna era Rose Montmasson, moglie di Francesco Crispi: unica donna "
                       "della spedizione, curò i feriti e fu soprannominata «l'angelo di "
                       "Calatafimi». Compare nell'elenco ufficiale dei 1089."),
+    },
+    {
+        "id": "globo",
+        "nome": "Mappamondo",
+        "titolo": "Il Mappamondo",
+        "domanda": ("Cavour ha fatto una rinuncia dolorosa per l'alleanza francese: ha ceduto "
+                    "la Savoia e quale città? Gira il mappamondo e indicala."),
+        "soluzioni": [],                # niente campo di testo: si clicca lo spillo della città giusta
+        "frammento": "E",
+        "curiosita": ("Promesse a Napoleone III a Plombières (1858) in cambio dell'aiuto contro l'Austria, "
+                      "Nizza e la Savoia furono cedute alla Francia con il Trattato di Torino del 24 marzo "
+                      "1860: dopo l'armistizio di Villafranca, che aveva lasciato il Veneto all'Austria, "
+                      "furono il prezzo dell'assenso francese all'annessione di Toscana ed Emilia. Nizza era "
+                      "la città natale di Garibaldi, che non perdonò mai a Cavour quella cessione."),
+    },
+    {
+        "id": "camino",
+        "nome": "Camino",
+        "titolo": "La Lettera Bruciata",
+        "domanda": ("Tra le braci c'è una lettera mezza bruciata, scritta col cifrario di Cesare: "
+                    "ogni lettera è spostata di tre posti in avanti nell'alfabeto di 26 lettere "
+                    "(A diventa D, B diventa E, C diventa F…). Decifrala: come si chiamavano tra loro i "
+                    "carbonari? EXRQL FXJLQL"),
+        "soluzioni": ["buoni cugini", "i buoni cugini", "cugini"],
+        "frammento": "DI",
+        "curiosita": ("I carbonari si chiamavano tra loro \"buoni cugini\" e chiamavano \"pagani\" chi "
+                      "non era affiliato. Le loro cellule si dicevano \"vendite\", come le botteghe dei "
+                      "carbonai da cui la società prese nome e simboli."),
     },
     {
         "id": "ritratto",
@@ -119,6 +152,8 @@ ENIGMI = [
 ]
 
 PAROLA_ORDINE = "obbedisco"
+assert "".join(e["frammento"] for e in ENIGMI) == PAROLA_ORDINE.upper(), "i frammenti non formano la parola d'ordine"
+N_ENIGMI = len(ENIGMI)
 
 TRAMA = ("4 maggio 1860. Sei un corriere della Carboneria, nascosto nello "
          "studio segreto di un patriota torinese. Porti un messaggio che deve "
@@ -126,8 +161,8 @@ TRAMA = ("4 maggio 1860. Sei un corriere della Carboneria, nascosto nello "
          "parlato: i gendarmi hanno circondato il palazzo e stanno forzando "
          "l'ingresso.\n"
          "Il patriota ha nascosto la parola d'ordine che apre l'uscita "
-         "segreta in quattro frammenti, custoditi dagli oggetti della stanza. "
-         "Hai 15 minuti per decifrare i codici, ricomporre la chiave e fuggire.")
+         "segreta in sei frammenti, custoditi dagli oggetti della stanza. "
+         "Hai 25 minuti per decifrare i codici, ricomporre la chiave e fuggire.")
 
 CURIOSITA_FINALE = ("Sei anni dopo, il 9 agosto 1866, durante la Terza guerra "
                     "d'indipendenza, Garibaldi aveva appena battuto gli "
@@ -631,7 +666,374 @@ def icona_scrivania(s, a, t):
     pygame.draw.ellipse(s, (255, 236, 150), (base_x - 3 + tremolio * 0.5, base_y - 56 - fh * 0.7, 6, fh * 0.7))
 
 
-ICONE = {"pianoforte": icona_pianoforte, "mappa": icona_mappa,
+# --------------------------------------------------------------------------
+# Mappamondo (enigma "globo"): texture equirettangolare e proiezione ortografica
+# --------------------------------------------------------------------------
+# Coste semplificate in (longitudine, latitudine): l'Europa e il Mediterraneo sono più dettagliati del resto del mondo.
+COSTA_EURASIA = [
+    # Gibilterra -> costa mediterranea di Spagna e Francia
+    (-5.6, 36.0), (-4.4, 36.7), (-2.1, 36.7), (-0.7, 37.6), (0.2, 38.8), (-0.3, 39.5), (0.9, 40.8), (2.2, 41.4),
+    (3.2, 42.2), (3.0, 43.2), (4.2, 43.5), (4.8, 43.4), (5.4, 43.25), (6.2, 43.1), (7.3, 43.7),
+    # Liguria e Italia tirrenica
+    (7.8, 43.8), (8.8, 44.4), (9.8, 44.05), (10.3, 43.5), (10.6, 42.95), (11.1, 42.4), (12.2, 41.75), (13.5, 41.2),
+    (14.25, 40.83), (14.75, 40.6), (15.0, 40.0), (15.7, 39.5), (15.8, 38.9), (15.65, 38.2), (16.1, 37.95),
+    # Calabria ionica, golfo di Taranto, Salento, Puglia, Adriatico
+    (16.6, 38.4), (17.15, 39.0), (16.6, 39.7), (16.6, 40.1), (17.2, 40.45), (18.0, 40.1), (18.4, 39.8),
+    (18.5, 40.15), (17.9, 40.65), (16.9, 41.1), (16.0, 41.45), (16.2, 41.9), (15.2, 41.95), (14.2, 42.5),
+    (13.6, 43.55), (12.6, 44.1), (12.3, 44.9), (12.35, 45.45), (13.1, 45.75), (13.75, 45.65),
+    # Istria, Dalmazia, Albania, Grecia
+    (13.6, 45.2), (13.9, 44.8), (14.5, 45.3), (15.2, 44.2), (16.4, 43.5), (17.5, 43.0), (18.1, 42.65), (18.7, 42.3),
+    (19.4, 41.9), (19.4, 41.3), (19.4, 40.4), (20.0, 39.7), (20.7, 39.0), (21.1, 38.3), (21.6, 37.9), (21.7, 36.8),
+    (22.4, 36.4), (22.8, 36.8), (23.2, 36.4), (23.1, 37.3), (23.7, 37.9), (24.05, 37.7), (24.1, 38.2),
+    (23.0, 39.0), (22.6, 40.0), (22.9, 40.6), (23.7, 40.2), (23.9, 40.7), (24.4, 40.9), (26.0, 40.8),
+    (26.2, 40.35),
+    # Dardanelli -> costa egea e meridionale della Turchia, Levante, Sinai
+    (26.4, 40.1), (26.1, 39.5), (26.9, 39.3), (26.3, 38.3), (27.1, 38.4), (27.3, 37.0), (28.2, 36.7), (29.6, 36.2),
+    (30.6, 36.8), (32.3, 36.1), (34.0, 36.3), (34.6, 36.8), (36.0, 36.6), (35.8, 35.5), (35.5, 34.0),
+    (34.8, 32.1), (34.3, 31.3), (32.6, 31.05), (32.5, 29.9), (33.6, 28.3), (34.3, 27.8), (34.95, 29.5),
+    # Penisola arabica
+    (35.2, 28.0), (37.2, 24.2), (39.2, 21.5), (40.8, 19.0), (42.7, 15.5), (43.4, 12.7), (45.0, 12.8), (48.5, 14.0),
+    (52.2, 15.6), (55.0, 17.0), (57.8, 19.0), (59.8, 22.5), (58.6, 23.6), (56.6, 24.5), (56.4, 26.3), (56.0, 25.0),
+    (54.4, 24.3), (51.6, 24.2), (51.6, 25.9), (50.6, 25.0), (50.1, 26.3), (48.6, 27.9), (47.9, 29.4), (48.5, 30.0),
+    # Iran, Pakistan, India
+    (50.8, 28.9), (51.4, 27.9), (54.0, 26.6), (56.3, 27.2), (57.3, 25.8), (61.6, 25.2), (66.5, 25.4), (67.0, 24.8),
+    (68.4, 23.6), (69.0, 22.4), (70.3, 20.9), (72.6, 21.2), (72.8, 19.0), (73.8, 15.5), (74.8, 12.9), (76.3, 9.9),
+    (77.5, 8.1), (78.2, 8.9), (79.8, 10.3), (80.2, 13.1), (82.3, 16.9), (84.9, 19.2), (86.5, 20.0), (87.9, 21.7),
+    (90.5, 22.0), (92.3, 21.0), (94.2, 18.8), (94.3, 16.0), (97.6, 16.5), (98.5, 13.0), (98.3, 9.5), (98.5, 8.0),
+    # Indocina, Cina, Corea
+    (100.3, 6.0), (101.3, 2.8), (103.8, 1.3), (103.4, 4.0), (102.2, 6.2), (100.5, 7.0), (99.2, 10.0), (100.5, 13.5),
+    (101.0, 12.6), (103.0, 11.0), (104.8, 8.6), (106.7, 10.3), (109.3, 12.0), (108.9, 15.3), (106.0, 18.0),
+    (106.7, 20.0), (108.0, 21.5), (109.8, 21.5), (110.5, 21.2), (114.2, 22.3), (117.0, 23.5), (119.5, 26.0),
+    (121.5, 28.5), (121.9, 31.0), (120.3, 34.0), (119.2, 34.6), (120.3, 36.0), (122.6, 37.4), (119.5, 37.1),
+    (117.7, 38.9), (118.0, 39.2), (121.2, 38.8), (121.6, 40.0), (124.0, 39.8), (125.1, 39.6), (126.6, 37.5),
+    (126.5, 34.5), (129.0, 35.1), (129.5, 36.0), (129.4, 37.5), (128.4, 38.8), (129.7, 41.0), (130.7, 42.3),
+    # Siberia orientale, Kamchatka, Chukotka
+    (131.9, 43.1), (135.4, 43.8), (138.0, 45.5), (140.5, 48.5), (141.0, 52.9), (137.5, 54.0), (135.1, 54.5),
+    (138.5, 56.5), (143.0, 59.3), (148.0, 59.4), (152.0, 59.2), (156.0, 57.5), (156.7, 51.0), (158.5, 52.9),
+    (162.0, 56.0), (163.0, 59.5), (166.0, 60.3), (172.0, 61.0), (177.0, 62.5), (179.9, 64.5),
+    # costa artica (da est a ovest)
+    (179.9, 68.9), (170.0, 70.0), (160.0, 69.5), (150.0, 71.5), (140.0, 72.5), (130.0, 71.0), (113.0, 73.5),
+    (105.0, 77.5), (95.0, 76.0), (87.0, 74.0), (80.0, 73.5), (73.0, 72.5), (68.0, 69.0), (60.0, 69.0), (53.0, 68.0),
+    (44.0, 68.5), (43.5, 66.3), (40.0, 64.6), (37.5, 64.0), (35.0, 64.5), (34.5, 66.0), (37.0, 66.2), (41.0, 67.8),
+    (33.0, 69.3), (28.5, 70.9), (25.8, 71.1),
+    # Norvegia, Svezia, golfo di Botnia, Finlandia, Baltico
+    (21.0, 70.2), (18.9, 69.8), (16.0, 68.6), (14.4, 67.3), (13.0, 66.0), (11.0, 64.5), (10.4, 63.4), (7.0, 62.7),
+    (5.0, 62.0), (5.3, 60.4), (5.6, 58.9), (6.5, 58.1), (8.0, 58.0), (9.5, 58.9), (10.7, 59.9), (11.2, 59.1),
+    (11.9, 57.7), (12.6, 56.1), (12.9, 55.6), (14.3, 55.6), (14.6, 56.1), (16.4, 56.7), (16.6, 57.8), (18.1, 59.3),
+    (18.7, 60.0), (17.1, 61.0), (17.3, 62.4), (20.3, 63.8), (22.2, 65.6), (24.2, 65.8), (25.4, 65.0), (21.6, 63.1),
+    (21.5, 61.0), (22.3, 60.0), (25.0, 60.2), (28.0, 60.5), (30.3, 59.9), (28.0, 59.5), (24.7, 59.4), (23.6, 58.9),
+    (24.1, 57.0), (22.0, 57.6), (21.0, 56.5), (21.1, 55.7), (21.0, 55.3), (19.9, 54.9), (18.6, 54.4), (16.0, 54.3),
+    (14.2, 53.9), (12.1, 54.2), (10.9, 54.0),
+    # Danimarca, Mare del Nord, Francia atlantica, Spagna e Portogallo
+    (10.9, 56.4), (10.6, 57.7), (8.2, 56.7), (8.6, 55.5), (8.9, 54.0), (8.5, 53.6), (7.0, 53.6), (5.5, 53.4),
+    (4.7, 52.9), (4.2, 51.9), (3.2, 51.3), (1.6, 50.9), (1.6, 50.2), (0.2, 49.5), (-1.2, 49.4), (-1.9, 49.7),
+    (-1.6, 48.6), (-3.5, 48.8), (-4.8, 48.4), (-4.5, 47.8), (-2.2, 47.2), (-1.2, 46.0), (-1.2, 44.6), (-1.8, 43.4),
+    (-3.8, 43.5), (-5.8, 43.6), (-8.0, 43.7), (-9.3, 43.0), (-8.8, 41.0), (-9.5, 38.8), (-8.8, 37.0), (-7.4, 37.2),
+    (-6.3, 36.8),
+]
+COSTA_AFRICA = [
+    (-5.8, 35.8), (-5.3, 35.9), (-2.0, 35.1), (-0.6, 35.7), (1.5, 36.5), (3.0, 36.8), (5.0, 36.7), (6.9, 36.9),
+    (8.6, 36.9), (9.9, 37.3), (10.2, 36.8), (11.0, 37.1), (10.6, 36.4), (11.1, 35.2), (10.8, 34.7), (10.1, 33.9),
+    (11.1, 33.2), (13.2, 32.9), (15.1, 32.4), (15.6, 31.4), (17.5, 31.0), (19.0, 30.3), (20.1, 31.0), (20.1, 32.1),
+    (21.6, 32.9), (23.0, 32.6), (24.0, 32.1), (25.2, 31.6), (27.3, 31.4), (29.9, 31.2), (31.0, 31.6), (32.3, 31.3),
+    (32.5, 29.9), (33.6, 27.2), (34.6, 25.5), (35.6, 23.9), (37.2, 21.0), (37.4, 19.0), (38.6, 18.0), (39.5, 15.6),
+    (41.5, 13.9), (43.3, 12.5), (43.1, 11.6), (44.5, 10.4), (48.0, 11.2), (51.2, 11.8), (51.3, 10.4), (50.8, 9.0),
+    (49.0, 6.0), (47.0, 4.0), (44.0, 1.5), (42.0, -1.0), (40.0, -3.0), (39.7, -4.0), (39.3, -6.8), (40.4, -10.4),
+    (40.7, -14.5), (39.0, -17.0), (34.8, -19.8), (35.5, -22.0), (35.5, -24.0), (32.9, -26.0), (32.5, -28.6),
+    (31.0, -29.9), (28.0, -32.7), (25.6, -34.0), (20.0, -34.8), (18.4, -34.0), (17.9, -32.0), (16.5, -28.6),
+    (15.2, -26.6), (14.5, -22.9), (12.0, -18.5), (11.8, -17.0), (13.4, -12.0), (13.3, -8.8), (12.2, -6.0),
+    (11.8, -4.8), (9.3, -1.0), (9.6, 2.5), (9.4, 3.9), (8.5, 4.5), (6.0, 4.3), (3.4, 6.4), (1.2, 6.1), (-2.0, 4.8),
+    (-4.0, 5.2), (-7.5, 4.4), (-9.5, 5.5), (-11.5, 6.9), (-13.2, 8.5), (-15.0, 11.0), (-16.8, 12.5), (-17.5, 14.7),
+    (-16.5, 16.0), (-16.0, 18.0), (-17.1, 21.0), (-16.0, 23.7), (-14.5, 26.1), (-13.2, 27.7), (-11.0, 28.6),
+    (-9.8, 29.9), (-9.6, 30.4), (-9.8, 31.5), (-8.5, 33.3), (-7.6, 33.6), (-6.8, 34.0), (-6.2, 35.1),
+]
+COSTA_NORD_AMERICA = [
+    (-168.0, 65.6), (-166.0, 68.9), (-156.8, 71.3), (-141.0, 69.6), (-128.0, 70.0), (-115.0, 68.5), (-95.0, 68.0),
+    (-90.0, 69.0), (-82.0, 68.0), (-81.0, 64.0), (-77.0, 62.5), (-70.0, 60.0), (-64.5, 60.3), (-61.0, 56.0),
+    (-56.0, 52.0), (-59.0, 48.0), (-64.2, 48.8), (-66.0, 45.0), (-70.0, 43.8), (-70.6, 42.6), (-70.0, 41.6),
+    (-74.0, 40.6), (-75.5, 38.5), (-75.5, 35.2), (-81.0, 31.8), (-80.1, 26.5), (-80.4, 25.2), (-81.8, 26.5),
+    (-82.8, 28.0), (-84.5, 30.0), (-89.0, 30.2), (-90.0, 29.0), (-94.0, 29.6), (-97.2, 27.6), (-97.5, 22.0),
+    (-96.0, 19.0), (-94.5, 18.2), (-91.0, 19.0), (-90.4, 21.0), (-87.0, 21.5), (-88.0, 18.5), (-88.2, 16.0),
+    (-84.0, 15.8), (-83.3, 10.5), (-79.5, 9.6), (-77.5, 8.5), (-78.5, 7.5), (-80.0, 7.4), (-83.0, 8.2), (-85.7, 10.0),
+    (-87.5, 13.0), (-91.0, 13.9), (-94.5, 16.0), (-96.5, 15.7), (-100.0, 17.0), (-105.5, 20.5), (-105.6, 23.0),
+    (-108.5, 25.5), (-112.0, 29.0), (-114.8, 31.8), (-114.0, 29.0), (-112.0, 26.0), (-109.9, 23.0), (-112.0, 24.8),
+    (-115.0, 29.5), (-117.1, 32.6), (-120.6, 34.5), (-122.5, 37.8), (-124.2, 40.4), (-124.5, 43.0), (-124.0, 46.3),
+    (-124.7, 48.4), (-123.0, 49.0), (-127.0, 50.5), (-130.0, 54.5), (-134.0, 58.0), (-139.0, 59.5), (-146.0, 60.5),
+    (-152.0, 59.0), (-154.0, 57.5), (-162.0, 55.0), (-165.0, 54.5), (-158.0, 56.5), (-157.0, 58.8), (-162.0, 58.6),
+    (-165.0, 60.5), (-164.5, 63.0), (-161.0, 64.5), (-166.0, 64.6),
+]
+COSTA_SUD_AMERICA = [
+    (-77.5, 8.5), (-75.5, 10.5), (-71.5, 12.4), (-68.0, 10.5), (-64.0, 10.6), (-61.5, 10.0), (-60.0, 8.5),
+    (-57.0, 6.0), (-52.0, 5.0), (-50.0, 1.8), (-49.0, 0.0), (-44.0, -2.5), (-39.0, -3.5), (-35.2, -5.5), (-35.0, -9.0),
+    (-38.5, -13.0), (-39.0, -17.5), (-41.0, -22.0), (-43.2, -22.9), (-48.5, -26.0), (-48.6, -28.5), (-51.0, -31.0),
+    (-53.4, -33.7), (-56.0, -34.9), (-58.0, -34.5), (-57.0, -36.5), (-58.0, -38.5), (-62.0, -39.0), (-62.5, -41.0),
+    (-65.0, -42.5), (-67.5, -46.0), (-65.8, -47.8), (-68.3, -50.2), (-68.4, -52.4), (-67.0, -54.8), (-71.0, -55.0),
+    (-74.0, -52.5), (-75.5, -48.0), (-74.0, -43.0), (-73.5, -37.0), (-71.6, -33.0), (-71.4, -28.0), (-70.4, -23.6),
+    (-70.3, -18.5), (-76.3, -13.8), (-77.1, -12.0), (-79.6, -7.0), (-81.3, -4.6), (-80.5, -1.0), (-79.8, 1.5),
+    (-77.3, 4.0), (-77.7, 7.5),
+]
+COSTA_AUSTRALIA = [
+    (114.0, -22.0), (114.0, -26.5), (115.0, -34.0), (118.0, -35.0), (123.5, -34.0), (129.0, -31.6), (134.0, -33.0),
+    (137.5, -35.5), (140.0, -37.8), (144.0, -38.4), (146.3, -39.1), (150.0, -37.5), (151.2, -33.9), (153.5, -28.5),
+    (153.0, -25.0), (149.0, -21.0), (146.0, -18.5), (145.4, -15.0), (142.5, -10.7), (141.5, -12.5), (141.5, -17.0),
+    (139.5, -17.5), (136.5, -15.5), (136.8, -12.3), (132.5, -11.5), (130.8, -12.4), (129.3, -15.0), (126.0, -14.0),
+    (122.0, -17.0), (121.0, -19.5), (116.7, -20.6),
+]
+COSTA_GROENLANDIA = [(-73.0, 78.0), (-60.0, 82.0), (-35.0, 83.5), (-20.0, 82.0), (-18.0, 77.0), (-22.0, 70.0), (-32.0, 68.0),
+               (-40.0, 65.0), (-43.5, 60.0), (-48.0, 61.0), (-52.0, 64.0), (-54.0, 67.0), (-55.0, 70.0), (-58.0, 75.5),
+               (-68.0, 77.0)]
+COSTA_ISOLE = [
+    # Mediterraneo
+    [(12.4, 37.8), (13.3, 38.2), (14.5, 38.05), (15.6, 38.25), (15.1, 37.5), (15.3, 37.0), (15.1, 36.65), (14.3, 36.8),
+     (12.9, 37.5)],                                                                                  # Sicilia
+    [(8.2, 41.0), (9.2, 41.25), (9.8, 40.9), (9.7, 40.0), (9.6, 39.2), (9.0, 39.1), (8.4, 38.9), (8.4, 39.5),
+     (8.5, 40.6)],                                                                                   # Sardegna
+    [(9.4, 43.0), (9.55, 42.0), (9.2, 41.4), (8.6, 41.7), (8.7, 42.6)],                              # Corsica
+    [(23.5, 35.3), (24.5, 35.4), (26.3, 35.2), (25.8, 35.0), (24.0, 35.0)],                         # Creta
+    [(32.3, 35.0), (33.0, 35.3), (34.6, 35.7), (34.0, 34.9), (33.0, 34.6), (32.4, 34.7)],           # Cipro
+    [(2.3, 39.6), (3.5, 39.8), (3.2, 39.3), (2.5, 39.4)],                                            # Maiorca
+    [(23.4, 38.9), (24.6, 38.1), (24.2, 38.1), (23.3, 38.6)],                                        # Eubea
+    # Atlantico e Mare del Nord
+    [(-5.7, 50.1), (-4.2, 50.4), (-3.0, 50.7), (-1.3, 50.7), (0.3, 50.8), (1.4, 51.2), (0.9, 51.6), (1.75, 52.6),
+     (0.4, 52.9), (0.1, 53.6), (-1.1, 54.6), (-1.6, 55.6), (-2.5, 56.1), (-2.1, 57.15), (-1.8, 57.6), (-3.1, 58.6),
+     (-5.0, 58.6), (-5.7, 57.5), (-5.6, 56.4), (-5.6, 55.3), (-4.9, 54.8), (-3.4, 54.9), (-3.4, 54.3), (-3.0, 53.4),
+     (-4.6, 53.3), (-4.1, 52.8), (-4.4, 52.2), (-5.3, 51.8), (-4.0, 51.6), (-3.0, 51.4), (-4.2, 51.2),
+     (-5.0, 50.4)],                                                                                  # Gran Bretagna
+    [(-6.2, 53.35), (-5.9, 54.6), (-6.2, 55.2), (-7.3, 55.4), (-8.5, 54.9), (-8.6, 54.2), (-10.0, 54.2), (-9.9, 53.5),
+     (-9.4, 52.6), (-10.4, 51.8), (-9.8, 51.5), (-8.5, 51.6), (-6.4, 52.2)],                         # Irlanda
+    [(-22.0, 64.0), (-24.0, 65.5), (-22.0, 66.4), (-16.0, 66.5), (-13.6, 65.2), (-15.0, 64.2), (-18.5, 63.4),
+     (-22.0, 63.8)],                                                                                 # Islanda
+    [(10.0, 55.0), (12.6, 55.7), (12.2, 56.1), (10.6, 55.5)],                                        # Selandia e Fionia
+    # resto del mondo
+    [(49.3, -12.0), (50.3, -15.5), (49.5, -17.0), (48.0, -22.0), (47.0, -25.0), (45.2, -25.5), (43.7, -23.0),
+     (44.0, -20.0), (44.4, -17.0), (46.3, -15.7), (48.0, -13.5)],                                    # Madagascar
+    [(79.8, 6.5), (80.0, 9.7), (81.3, 8.5), (81.8, 7.0), (80.6, 5.9)],                               # Sri Lanka
+    [(95.3, 5.6), (97.5, 5.2), (100.4, 2.2), (103.6, -1.0), (106.0, -3.2), (105.8, -5.8), (104.5, -5.9),
+     (101.5, -3.0), (98.7, 0.0), (96.0, 2.8)],                                                       # Sumatra
+    [(105.2, -6.8), (108.0, -6.3), (111.0, -6.4), (114.5, -7.7), (114.4, -8.7), (111.0, -8.2), (106.5, -7.4)],  # Giava
+    [(109.0, 1.5), (110.0, -1.0), (110.5, -3.0), (114.5, -4.0), (116.3, -3.5), (117.5, 0.0), (118.9, 1.0),
+     (119.0, 5.0), (117.0, 7.0), (115.5, 5.0), (113.0, 3.2), (111.0, 1.7)],                          # Borneo
+    [(119.5, -5.5), (120.5, 0.5), (124.8, 1.5), (121.5, -1.0), (123.0, -4.5), (121.2, -2.5)],       # Sulawesi
+    [(131.0, -1.0), (135.0, -3.3), (138.0, -1.6), (141.0, -2.6), (144.0, -3.8), (147.5, -6.0), (150.0, -10.5),
+     (147.0, -10.0), (144.0, -8.0), (141.0, -9.0), (138.0, -8.3), (137.5, -5.0), (133.0, -4.0), (132.0, -2.6)],  # N. Guinea
+    [(120.5, 18.5), (122.2, 18.4), (122.0, 16.0), (124.0, 13.0), (120.8, 13.8), (120.0, 16.0)],     # Luzon
+    [(122.0, 8.0), (126.5, 7.0), (125.5, 9.5), (123.5, 8.0)],                                        # Mindanao
+    [(120.2, 22.5), (121.9, 25.2), (121.5, 23.0)],                                                   # Taiwan
+    [(108.6, 19.2), (110.5, 20.1), (111.0, 19.6), (109.6, 18.2)],                                    # Hainan
+    [(130.9, 34.0), (132.0, 33.9), (135.0, 33.5), (137.0, 34.5), (139.8, 34.9), (140.9, 36.0), (141.6, 38.3),
+     (142.0, 39.6), (141.4, 41.4), (140.0, 40.6), (139.8, 38.5), (138.5, 37.4), (136.8, 37.3), (135.7, 35.5),
+     (133.0, 35.5), (131.0, 34.4)],                                                                  # Honshu
+    [(130.0, 32.0), (130.7, 31.0), (131.7, 31.5), (131.9, 33.2), (130.0, 33.8), (129.5, 33.0)],     # Kyushu
+    [(140.0, 42.0), (141.0, 43.3), (141.7, 45.4), (143.5, 44.3), (145.6, 43.3), (143.3, 42.0), (141.0, 41.6)],  # Hokkaido
+    [(142.0, 46.0), (143.5, 49.0), (143.0, 54.0), (142.2, 54.0), (142.0, 50.0)],                     # Sachalin
+    [(144.6, -40.7), (148.3, -40.9), (148.0, -43.2), (146.0, -43.6), (145.0, -42.0)],               # Tasmania
+    [(172.7, -34.4), (175.0, -36.8), (178.5, -37.7), (177.0, -39.3), (176.0, -41.3), (174.8, -41.3), (174.0, -39.0),
+     (173.0, -35.5)],                                                                                # N. Zelanda nord
+    [(172.5, -40.5), (174.3, -41.7), (173.0, -43.5), (171.2, -44.4), (169.0, -46.6), (166.5, -46.0), (168.0, -44.0),
+     (171.0, -42.0)],                                                                                # N. Zelanda sud
+    [(-80.0, 73.0), (-62.0, 66.5), (-65.0, 63.0), (-75.0, 64.5), (-85.0, 70.0)],                    # Baffin
+    [(-120.0, 76.0), (-95.0, 81.0), (-70.0, 82.5), (-80.0, 76.0), (-100.0, 73.0), (-118.0, 71.0)],  # arcipelago artico
+    [(-85.0, 22.0), (-80.0, 23.2), (-74.2, 20.2), (-77.5, 19.9), (-82.0, 21.6)],                    # Cuba
+    [(-74.4, 18.5), (-68.4, 18.6), (-69.9, 19.9), (-72.8, 19.9)],                                    # Hispaniola
+    [(-53.5, 46.6), (-52.6, 47.6), (-55.5, 51.6), (-59.4, 47.6)],                                    # Terranova
+    [(52.0, 71.5), (55.0, 73.5), (60.0, 76.5), (68.0, 77.0), (57.0, 71.5)],                          # Novaja Zemlja
+    [(11.0, 78.5), (17.0, 80.2), (27.0, 80.0), (22.0, 77.5), (16.0, 76.6)],                          # Svalbard
+]
+COSTA_MARI_INTERNI = [
+    [(29.0, 41.15), (28.0, 41.9), (27.9, 42.7), (28.0, 43.3), (28.6, 43.8), (29.7, 45.2), (30.7, 46.5), (31.7, 46.6),
+     (33.5, 46.0), (32.5, 45.4), (33.6, 44.5), (35.0, 44.8), (36.4, 45.25), (35.3, 45.5), (35.4, 46.5), (37.5, 47.1),
+     (39.2, 47.2), (38.2, 46.2), (37.6, 45.6), (36.9, 45.3), (37.0, 45.0), (37.8, 44.7), (39.7, 43.6), (41.6, 41.6),
+     (39.7, 41.0), (36.3, 41.3), (34.9, 42.0), (33.0, 41.9), (31.0, 41.1)],                          # Mar Nero e d'Azov
+    [(26.6, 40.4), (27.5, 40.3), (29.0, 41.0), (28.0, 41.0)],                                        # Mar di Marmara
+    [(47.2, 44.2), (47.8, 45.8), (49.0, 46.5), (51.5, 47.0), (53.0, 46.8), (53.2, 45.3), (51.3, 44.5), (51.5, 43.2),
+     (52.8, 41.8), (53.0, 40.0), (53.9, 38.5), (53.9, 37.3), (51.0, 36.8), (49.0, 37.6), (48.9, 38.4), (49.5, 40.3),
+     (48.6, 41.8), (47.5, 43.0)],                                                                    # Mar Caspio
+    [(-95.0, 58.8), (-92.0, 57.0), (-87.0, 55.5), (-82.3, 52.9), (-79.5, 51.5), (-78.8, 54.5), (-77.0, 58.0),
+     (-78.0, 62.3), (-82.0, 64.5), (-86.0, 64.0), (-90.5, 63.5), (-94.0, 61.0)],                    # Baia di Hudson
+    [(-88.0, 48.3), (-84.5, 46.5), (-82.5, 43.0), (-79.0, 43.4), (-81.5, 45.0), (-87.5, 45.5)],     # Grandi Laghi
+]
+
+# Gli spilli sul mappamondo (lat, lon), senza nome: chi gioca deve sapere dov'è Nizza. Torino, Genova e Marsiglia sono
+# escluse apposta: a questa scala distano 1-2 gradi da Nizza e i loro spilli si sovrapporrebbero.
+CITTA_GLOBO = [("Nizza", 43.70, 7.27), ("Venezia", 45.44, 12.33), ("Roma", 41.90, 12.50), ("Napoli", 40.85, 14.27),
+               ("Parigi", 48.86, 2.35), ("Vienna", 48.21, 16.37), ("Madrid", 40.42, -3.70), ("Londra", 51.51, -0.13)]
+CITTA_GIUSTA = "Nizza"
+GLOBO_TW, GLOBO_TH = 1440, 720            # texture: 4 pixel per grado
+GLOBO_ROLLIO = math.radians(23)           # l'asse del mappamondo è inclinato come quello terrestre
+GLOBO_INCLINAZIONI = (0, 15, 30, 45, 60)  # latitudine al centro della vista: W-S (o trascinando in su e in giù) cambiano
+GLOBO_INCLINAZIONE_INIZIALE = 2
+_PALETTE_GLOBO = [(0, 0, 0), (150, 178, 172), (184, 204, 190), (222, 202, 154), (92, 66, 40), (128, 108, 86),
+                  (150, 44, 44)]          # 0 = trasparente (fuori dal disco)
+_DATI_GLOBO = []
+_MAPPE_GLOBO = {}
+_IN_BYTE = getattr(pygame.image, "tobytes", None) or pygame.image.tostring        # pygame 2.3+ / versioni precedenti
+_DA_BYTE = getattr(pygame.image, "frombytes", None) or pygame.image.fromstring
+
+
+def dati_globo():
+    """La texture del mappamondo come byte di indici di colore (8 bit). Ogni riga contiene due giri del mondo
+    affiancati, così girare il globo vuol dire solo leggere a partire da un byte più avanti; in fondo c'è una fascia
+    di zeri (colore trasparente) per i pixel fuori dal disco."""
+    if not _DATI_GLOBO:
+        w, h = GLOBO_TW, GLOBO_TH
+        img = pygame.Surface((w, h), 0, 8)
+        img.set_palette(_PALETTE_GLOBO + [(0, 0, 0)] * (256 - len(_PALETTE_GLOBO)))
+        mare, basso, terra, costa, griglia, equatore = _PALETTE_GLOBO[1:]
+        img.fill(mare)
+
+        def P(pts):
+            return [((lon + 180) / 360 * w, (90 - lat) / 180 * h) for lon, lat in pts]
+
+        rnd = random.Random(5)
+        antartide = ([(-180, -90)] + [(lon, -70 + 4 * math.sin(lon * .05) + rnd.uniform(-1.5, 1.5))
+                                      for lon in range(-180, 181, 6)] + [(180, -90)])
+        terre = [COSTA_EURASIA, COSTA_AFRICA, COSTA_NORD_AMERICA, COSTA_SUD_AMERICA, COSTA_AUSTRALIA,
+                 COSTA_GROENLANDIA, antartide] + COSTA_ISOLE
+        for t in terre:                          # bassi fondali: una fascia più chiara lungo le coste
+            pygame.draw.polygon(img, basso, P(t), 9)
+        for t in terre:
+            pygame.draw.polygon(img, terra, P(t))
+            pygame.draw.polygon(img, costa, P(t), 2)
+        for m in COSTA_MARI_INTERNI:
+            pygame.draw.polygon(img, mare, P(m))
+            pygame.draw.polygon(img, costa, P(m), 2)
+        for lon in range(-180, 181, 15):         # meridiani e paralleli ogni 15 gradi, equatore in rosso
+            x = (lon + 180) / 360 * (w - 1)
+            pygame.draw.line(img, griglia, (x, 0), (x, h), 1)
+        for lat in range(-75, 76, 15):
+            y = (90 - lat) / 180 * h
+            pygame.draw.line(img, equatore if lat == 0 else griglia, (0, y), (w, y), 2 if lat == 0 else 1)
+        righe = _IN_BYTE(img, "P")
+        _DATI_GLOBO.append(b"".join(righe[y * w:(y + 1) * w] * 2 for y in range(h)) + bytes(w))
+    return _DATI_GLOBO[0]
+
+
+def mappa_globo(R, lat0, vista):
+    """Per ogni pixel di una finestra (vista = larghezza, altezza, centro x, centro y del globo) il byte della texture
+    che ci va sopra: proiezione ortografica di un globo di raggio R, con la latitudine lat0 al centro e l'asse inclinato
+    di GLOBO_ROLLIO. È un calcolo lento (decimi di secondo): si fa una volta e si tiene da parte.
+    Restituisce un itemgetter che, applicato ai dati della texture, dà in un colpo solo tutti i pixel."""
+    chiave = (R, lat0, vista)
+    if chiave not in _MAPPE_GLOBO:
+        vw, vh, cx, cy = vista
+        w2 = 2 * GLOBO_TW
+        fuori = GLOBO_TH * w2                    # primo byte della fascia trasparente
+        s0, c0 = math.sin(math.radians(lat0)), math.cos(math.radians(lat0))
+        sr, cr = math.sin(GLOBO_ROLLIO), math.cos(GLOBO_ROLLIO)
+        kx, ky = GLOBO_TW / math.tau, GLOBO_TH / math.pi
+        asin, atan2, sqrt = math.asin, math.atan2, math.sqrt
+        idx = []
+        ap = idx.append
+        for py in range(vh):
+            y0 = (cy - py) / R
+            for px in range(vw):
+                x0 = (px - cx) / R
+                x = x0 * cr + y0 * sr
+                y = y0 * cr - x0 * sr
+                d = x * x + y * y
+                if d >= 1.0:
+                    ap(fuori)
+                    continue
+                z = sqrt(1.0 - d)
+                Y = y * c0 + z * s0
+                Z = z * c0 - y * s0
+                col = int(atan2(x, Z) * kx + GLOBO_TW / 2) % GLOBO_TW
+                riga = min(GLOBO_TH - 1, int((math.pi / 2 - asin(max(-1.0, min(1.0, Y)))) * ky))
+                ap(riga * w2 + col)
+        _MAPPE_GLOBO[chiave] = operator.itemgetter(*idx)
+    return _MAPPE_GLOBO[chiave]
+
+
+def disegna_globo(R, lat0, vista, giro):
+    """Il globo girato di 'giro' pixel di texture (0 .. GLOBO_TW-1): fuori dal disco la superficie è trasparente."""
+    pixel = bytes(mappa_globo(R, lat0, vista)(dati_globo()[giro % GLOBO_TW:]))
+    img = _DA_BYTE(pixel, vista[:2], "P")
+    img.set_palette(_PALETTE_GLOBO + [(0, 0, 0)] * (256 - len(_PALETTE_GLOBO)))
+    img.set_colorkey(0)
+    return img
+
+
+@lru_cache(maxsize=8)
+def ombra_globo(R, vista):
+    """Luce sul globo: bordo in ombra, un riflesso in alto a sinistra e un filo scuro attorno."""
+    vw, vh, cx, cy = vista
+    o = pygame.Surface((vw, vh), pygame.SRCALPHA)
+    for r in range(R, 0, -2):
+        pygame.draw.circle(o, (20, 12, 6, int(150 * (r / R) ** 4)), (cx, cy), r)
+    luce = pygame.Surface((vw, vh), pygame.SRCALPHA)
+    for r in range(R // 2, 0, -2):
+        pygame.draw.circle(luce, (255, 248, 230, int(46 * (1 - r / (R / 2)))), (cx - R // 3, cy - R // 3), r)
+    o.blit(luce, (0, 0))
+    pygame.draw.circle(o, (40, 26, 14, 220), (cx, cy), R, 2)
+    return o
+
+
+def proietta_citta(lat, lon, R, lat0, giro, cx, cy, quota=1.0):
+    """Posizione sullo schermo di un punto del globo (quota > 1: sopra la superficie, come la capocchia di uno
+    spillo) e la sua profondità z: se z <= 0 il punto è sul lato nascosto."""
+    lon_rel = math.radians((lon - giro * 360 / GLOBO_TW + 180) % 360 - 180)
+    la = math.radians(lat)
+    s0, c0 = math.sin(math.radians(lat0)), math.cos(math.radians(lat0))
+    X, Y, Z = math.cos(la) * math.sin(lon_rel), math.sin(la), math.cos(la) * math.cos(lon_rel)
+    y, z = Y * c0 - Z * s0, Y * s0 + Z * c0
+    x0 = X * math.cos(GLOBO_ROLLIO) - y * math.sin(GLOBO_ROLLIO)
+    y0 = X * math.sin(GLOBO_ROLLIO) + y * math.cos(GLOBO_ROLLIO)
+    return cx + x0 * R * quota, cy - y0 * R * quota, z
+
+
+def icona_globo(s, a, t):
+    cx, cy = a.centerx, a.centery - 4
+    R = 64
+    pygame.draw.ellipse(s, LEGNO_SCURO, (cx - 52, cy + R + 30, 104, 18))
+    pygame.draw.rect(s, ORO_SCURO, (cx - 6, cy + R + 4, 12, 32))
+    vista = (2 * R + 1, 2 * R + 1, R, R)
+    giro = int(t * 10 * GLOBO_TW / 360)           # gira piano da solo
+    s.blit(disegna_globo(R, 30, vista, giro), (cx - R, cy - R))
+    s.blit(ombra_globo(R, vista), (cx - R, cy - R))
+    # meridiano d'ottone: mezzo anello inclinato come l'asse
+    pts = []
+    for k in range(25):
+        ang = GLOBO_ROLLIO - math.pi / 2 + math.pi * k / 24
+        pts.append((cx + math.cos(ang) * (R + 7), cy - math.sin(ang) * (R + 7)))
+    pygame.draw.lines(s, ORO, False, pts, 4)
+    for x, y in (pts[0], pts[-1]):
+        pygame.draw.circle(s, ORO_CHIARO, (int(x), int(y)), 4)
+
+
+def icona_camino(s, a, t):
+    cx, base = a.centerx, a.centery + 86
+    corpo = pygame.Rect(0, 0, 176, 150)
+    corpo.midbottom = (cx, base)
+    s.blit(gradiente(corpo.w, corpo.h, (138, 130, 122), (86, 80, 76)), corpo)
+    for y in range(corpo.top + 22, corpo.bottom, 22):                       # conci di pietra
+        pygame.draw.line(s, (70, 64, 60), (corpo.left, y), (corpo.right, y), 1)
+        for x in range(corpo.left + (14 if (y // 22) % 2 else 0), corpo.right, 30):
+            pygame.draw.line(s, (70, 64, 60), (x, y - 22), (x, y), 1)
+    bocca = pygame.Rect(0, 0, 112, 104)
+    bocca.midbottom = (cx, base - 8)
+    pygame.draw.rect(s, (14, 10, 10), bocca, border_top_left_radius=46, border_top_right_radius=46)
+    pygame.draw.rect(s, LEGNO_SCURO, (corpo.left - 12, corpo.top - 14, corpo.w + 24, 16), border_radius=3)
+    pygame.draw.line(s, ORO_SCURO, (corpo.left - 12, corpo.top - 14), (corpo.right + 12, corpo.top - 14), 2)
+    # braci e fiamme
+    s.blit(alone((255, 140, 50), 70, 110), (cx - 70, bocca.bottom - 100))
+    for dx, ang in ((-18, .3), (14, -.25)):
+        x1, y1 = cx + dx - 32 * math.cos(ang), bocca.bottom - 12 - 32 * math.sin(ang)
+        x2, y2 = cx + dx + 32 * math.cos(ang), bocca.bottom - 12 + 32 * math.sin(ang)
+        pygame.draw.line(s, (70, 44, 26), (x1, y1), (x2, y2), 9)
+    for i in range(5):
+        fx = cx - 32 + i * 16
+        fh = 34 + 12 * math.sin(t * 9 + i * 1.7) + (10 if i == 2 else 0)
+        pygame.draw.ellipse(s, (255, 130, 40), (fx - 9, bocca.bottom - 16 - fh, 18, fh))
+        pygame.draw.ellipse(s, (255, 226, 130), (fx - 4, bocca.bottom - 12 - fh * .6, 8, fh * .55))
+    # la lettera mezza bruciata sul focolare
+    lettera = [(cx + 20, base - 2), (cx + 68, base - 10), (cx + 64, base - 30), (cx + 50, base - 34),
+               (cx + 40, base - 26), (cx + 18, base - 22)]
+    pygame.draw.polygon(s, PERGAMENA, lettera)
+    pygame.draw.polygon(s, (60, 30, 14), lettera, 2)
+    for k in range(2):
+        pygame.draw.line(s, INCHIOSTRO, (cx + 26, base - 16 + k * 6), (cx + 58, base - 21 + k * 6), 2)
+
+ICONE = {"pianoforte": icona_pianoforte, "mappa": icona_mappa, "globo": icona_globo, "camino": icona_camino,
          "ritratto": icona_ritratto, "scrivania": icona_scrivania}
 
 
@@ -710,7 +1112,8 @@ class Pulsante:
 
 
 class Carta:
-    """Uno dei quattro oggetti cliccabili della stanza."""
+    """Uno dei sei oggetti cliccabili della stanza."""
+    LARGHEZZA_ICONA = 188                  # le icone sono disegnate per questa larghezza; nelle carte strette si riducono
 
     def __init__(self, enigma, rect):
         self.enigma = enigma
@@ -721,6 +1124,7 @@ class Carta:
         self.sollevamento = 0.0
         self.ombra = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         pygame.draw.rect(self.ombra, (0, 0, 0, 120), self.ombra.get_rect(), border_radius=14)
+        self.foglio_icona = pygame.Surface((self.LARGHEZZA_ICONA, 210), pygame.SRCALPHA)
 
     def disegna(self, s, mouse, t, risolto, dt):
         hover = self.rect.collidepoint(mouse) and not risolto
@@ -740,7 +1144,15 @@ class Carta:
         angoli_ornati(s, interno.inflate(-10, -10), ORO_CHIARO if (risolto or hover) else ORO_SCURO)
         # luce morbida dietro l'oggetto
         s.blit(alone((255, 210, 140), 90, 50 + 20 * self.sollevamento), (r.centerx - 90, r.y + 40))
-        ICONE[self.enigma["id"]](s, pygame.Rect(r.x + 10, r.y + 34, r.w - 20, 210), t)
+        area = pygame.Rect(r.x + 10, r.y + 34, r.w - 20, 210)
+        if area.w >= self.LARGHEZZA_ICONA:
+            ICONE[self.enigma["id"]](s, area, t)
+        else:
+            self.foglio_icona.fill((0, 0, 0, 0))
+            ICONE[self.enigma["id"]](self.foglio_icona, self.foglio_icona.get_rect(), t)
+            k = area.w / self.LARGHEZZA_ICONA
+            icona = pygame.transform.smoothscale(self.foglio_icona, (area.w, int(210 * k)))
+            s.blit(icona, (area.x, area.y + (210 - icona.get_height()) // 2))
         # targhetta d'ottone
         targa = pygame.Rect(0, 0, r.w - 44, 42)
         targa.midtop = (r.centerx, r.bottom - 96)
@@ -753,12 +1165,18 @@ class Carta:
             dim -= 1
         testo(s, self.enigma["nome"].upper(), font(dim, bold=True), INCHIOSTRO, targa.center, ombra=False)
         if risolto:
-            testo(s, "Risolto · «%s»" % self.enigma["frammento"], font(18, bold=True), ORO_CHIARO,
-                  (r.centerx, r.bottom - 34))
+            scritta = "Risolto · «%s»" % self.enigma["frammento"]
+            dim = 18
+            while dim > 11 and font(dim, bold=True).size(scritta)[0] > r.w - 18:
+                dim -= 1
+            testo(s, scritta, font(dim, bold=True), ORO_CHIARO, (r.centerx, r.bottom - 34))
             ceralacca(s, (r.right - 30, r.top + 30), 20, spunta=True)
         else:
             alpha = 150 + 105 * self.sollevamento
-            testo(s, "Clicca per esaminare", font(17, italic=True), PERGAMENA, (r.centerx, r.bottom - 34),
+            dim = 17
+            while dim > 11 and font(dim, italic=True).size("Clicca per esaminare")[0] > r.w - 18:
+                dim -= 1
+            testo(s, "Clicca per esaminare", font(dim, italic=True), PERGAMENA, (r.centerx, r.bottom - 34),
                   alpha=alpha)
         return hover
 
@@ -882,13 +1300,18 @@ class Modale:
 
     def _disegna_domanda(self, s, p, off, mouse, t):
         if self.enigma is None:
-            titolo, domanda = "La Porta Uscita", "Inserisci la parola d'ordine unendo i 4 frammenti di chiave trovati."
+            titolo, domanda = "La Porta Uscita", ("Inserisci la parola d'ordine unendo i %d frammenti di chiave trovati."
+                                                  % N_ENIGMI)
         else:
             titolo, domanda = self.enigma["titolo"], self.enigma["domanda"]
         testo(s, titolo, font(40, bold=True), BORDEAUX_SCURO, (p.centerx, p.top + 52), ombra=False)
         fregio(s, (p.centerx, p.top + 88), 360, BORDEAUX)
-        y = paragrafo(s, "«" + domanda + "»", font(25, italic=True), INCHIOSTRO, p.centerx, p.top + 112,
-                      p.w - 120, 1.2)
+        spazio = self.input_rect.top - 34 - (p.top + 112)        # la domanda deve finire sopra "La tua risposta"
+        for corpo in (25, 23, 22, 21, 20):
+            f = font(corpo, italic=True)
+            if len(a_capo("«" + domanda + "»", f, p.w - 120)) * int(f.get_linesize() * 1.2) <= spazio:
+                break
+        y = paragrafo(s, "«" + domanda + "»", f, INCHIOSTRO, p.centerx, p.top + 112, p.w - 120, 1.2)
         if self.enigma is None:
             frammenti = "  ·  ".join(e["frammento"] for e in ENIGMI)
             testo(s, frammenti, font(34, bold=True), BORDEAUX, (p.centerx, max(y + 30, p.top + 232)), ombra=False)
@@ -930,15 +1353,151 @@ class Modale:
         testo(s, "Hai trovato un frammento della chiave finale", font(21, italic=True), INCHIOSTRO,
               (p.centerx, p.top + 116), ombra=False)
         pulsa = 1 + 0.04 * math.sin(t * 4)
-        raggio = int(72 * pulsa)
-        s.blit(alone((255, 200, 90), 120, 90), (p.centerx - 120, p.top + 200 - 120))
-        ceralacca(s, (p.centerx, p.top + 200), raggio, e["frammento"], font(34 if len(e["frammento"]) > 2 else 46, bold=True))
-        testo(s, "Curiosità storica", font(24, bold=True), BORDEAUX, (p.centerx, p.top + 300), ombra=False)
-        paragrafo(s, e["curiosita"], font(23, italic=True), INCHIOSTRO, p.centerx, p.top + 330, p.w - 140, 1.2)
+        # le curiosità lunghe (Nizza) hanno un sigillo più piccolo e un corpo più piccolo: devono stare sopra il pulsante
+        lunga = len(a_capo(e["curiosita"], font(23, italic=True), p.w - 140)) > 3
+        cy, r0, yt = (p.top + 178, 52, p.top + 250) if lunga else (p.top + 200, 72, p.top + 300)
+        spazio = self.btn_continua.rect.top - 12 - (yt + 30)
+        for corpo in (23, 21, 20, 19, 18, 17):
+            f = font(corpo, italic=True)
+            if len(a_capo(e["curiosita"], f, p.w - 140)) * int(f.get_linesize() * 1.2) <= spazio:
+                break
+        raggio = int(r0 * pulsa)
+        s.blit(alone((255, 200, 90), 120, 90), (p.centerx - 120, cy - 120))
+        ceralacca(s, (p.centerx, cy), raggio, e["frammento"], font(34 if len(e["frammento"]) > 2 else 46, bold=True))
+        testo(s, "Curiosità storica", font(24, bold=True), BORDEAUX, (p.centerx, yt), ombra=False)
+        paragrafo(s, e["curiosita"], f, INCHIOSTRO, p.centerx, yt + 30, p.w - 140, 1.2)
         orig = self.btn_continua.rect
         self.btn_continua.rect = orig.move(*off)
         self.btn_continua.disegna(s, mouse)
         self.btn_continua.rect = orig
+
+
+class ModaleGlobo(Modale):
+    """Il mappamondo: si gira trascinando (o con A-D / frecce), W-S cambiano l'inclinazione, la rotellina fa lo zoom.
+    Gli spilli non hanno nome: cliccando quello sbagliato compare il nome della città, con Nizza l'enigma è risolto."""
+    RAGGI = (128, 260, 460)                # raggio del globo in pixel: intero e due livelli di zoom (rotellina)
+
+    def __init__(self, gioco, enigma):
+        super().__init__(gioco, enigma)
+        p = self.pannello
+        self.vista_rect = pygame.Rect(0, 0, 640, 262)
+        self.vista_rect.midtop = (p.centerx, p.top + 160)
+        self.btn_chiudi = Pulsante("Chiudi", (p.right - 176, p.bottom - 68, 136, 46), "secondario")
+        if gioco.giro_globo is None:
+            gioco.giro_globo = random.randrange(GLOBO_TW)
+        self.giro = float(gioco.giro_globo)
+        self.incl = GLOBO_INCLINAZIONE_INIZIALE
+        self.zoom = 0
+        self.trascina = False
+        self.su_giu = 0.0                  # trascinamento verticale accumulato: ogni 40 pixel cambia l'inclinazione
+        self.sopra = None                  # lo spillo sotto il mouse
+        self.immagine = None
+
+    @property
+    def vista(self):
+        return self.vista_rect.w, self.vista_rect.h, self.vista_rect.w // 2, self.vista_rect.h // 2
+
+    def _gira(self, pixel_schermo):
+        """Sposta la superficie del globo di tanti pixel dello schermo verso destra (negativi: a sinistra)."""
+        gradi = math.degrees(pixel_schermo / self.RAGGI[self.zoom])
+        self.giro = (self.giro - gradi * GLOBO_TW / 360) % GLOBO_TW
+        self.gioco.giro_globo = self.giro
+
+    def _inclina(self, verso):
+        self.incl = max(0, min(len(GLOBO_INCLINAZIONI) - 1, self.incl + verso))
+
+    def gestisci(self, e, pos):
+        if self.fase == "ricompensa":
+            return super().gestisci(e, pos)
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_ESCAPE:
+                return True
+            if e.key in (pygame.K_w, pygame.K_UP):          # come trascinare in su: la superficie sale
+                self._inclina(-1)
+            elif e.key in (pygame.K_s, pygame.K_DOWN):
+                self._inclina(1)
+        elif e.type == pygame.MOUSEWHEEL:
+            self.zoom = max(0, min(len(self.RAGGI) - 1, self.zoom + (e.y > 0) - (e.y < 0)))
+        elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+            if self.btn_chiudi.colpito(pos):
+                self.gioco.suoni.suona("click")
+                return True
+            if self.sopra == CITTA_GIUSTA:
+                self.sopra = None
+                self.fase = "ricompensa"
+                self.apertura = time.monotonic()
+                self.gioco.risolvi(self.enigma)
+            elif self.sopra:
+                self.messaggio = "Questa è %s… non è la città che cerchi." % self.sopra
+                self.scuoti = 0.3
+                self.gioco.suoni.suona("sbagliato")
+            elif self.vista_rect.collidepoint(pos):
+                self.trascina, self.su_giu = True, 0.0
+        elif e.type == pygame.MOUSEBUTTONUP and e.button == 1:
+            self.trascina = False
+        elif e.type == pygame.MOUSEMOTION and self.trascina:
+            dx, dy = (v / max(self.gioco.scala, 1e-3) for v in e.rel)       # pixel della finestra -> pixel del gioco
+            self._gira(dx)
+            self.su_giu += dy
+            while abs(self.su_giu) >= 40:
+                self._inclina(-1 if self.su_giu < 0 else 1)
+                self.su_giu -= math.copysign(40, self.su_giu)
+        return False
+
+    def disegna(self, s, mouse, t, dt):
+        if self.fase == "domanda":
+            k = pygame.key.get_pressed()
+            verso = (k[pygame.K_d] or k[pygame.K_RIGHT]) - (k[pygame.K_a] or k[pygame.K_LEFT])
+            if verso:
+                self._gira(verso * dt * 1.2 * self.RAGGI[self.zoom])       # circa 70 gradi al secondo
+        super().disegna(s, mouse, t, dt)
+
+    def _disegna_domanda(self, s, p, off, mouse, t):
+        e = self.enigma
+        testo(s, e["titolo"], font(38, bold=True), BORDEAUX_SCURO, (p.centerx, p.top + 46), ombra=False)
+        fregio(s, (p.centerx, p.top + 80), 360, BORDEAUX)
+        paragrafo(s, "«" + e["domanda"] + "»", font(21, italic=True), INCHIOSTRO, p.centerx, p.top + 96, p.w - 120, 1.15)
+        v = self.vista_rect.move(*off)
+        R, lat0 = self.RAGGI[self.zoom], GLOBO_INCLINAZIONI[self.incl]
+        vista = self.vista
+        giro = int(self.giro) % GLOBO_TW
+        chiave = (R, lat0, giro)
+        if self.immagine is None or self.immagine[0] != chiave:
+            self.immagine = (chiave, disegna_globo(R, lat0, vista, giro))
+        pygame.draw.rect(s, (40, 30, 24), v.inflate(8, 8), border_radius=10)
+        pygame.draw.rect(s, (62, 46, 34), v, border_radius=8)
+        clip = s.get_clip()
+        s.set_clip(v)
+        s.blit(self.immagine[1], v.topleft)
+        s.blit(ombra_globo(R, vista), v.topleft)
+        # spilli: la capocchia sta un po' sopra la superficie; quello più vicino al mouse si illumina
+        cx, cy = v.x + vista[2], v.y + vista[3]
+        spilli, self.sopra, vicino = [], None, (5 + 3 * self.zoom) ** 2
+        for nome, la, lo in CITTA_GLOBO:
+            bx, by, z = proietta_citta(la, lo, R, lat0, giro, cx, cy)
+            if z <= .08:
+                continue
+            hx, hy, _ = proietta_citta(la, lo, R, lat0, giro, cx, cy, 1 + 9 / R)      # capocchia 9 pixel sopra
+            spilli.append((nome, bx, by, hx, hy))
+            d = (hx - mouse[0]) ** 2 + (hy - mouse[1]) ** 2
+            if d < vicino and v.collidepoint(mouse):
+                self.sopra, vicino = nome, d
+        rc = 4 + self.zoom
+        for nome, bx, by, hx, hy in spilli:
+            pygame.draw.line(s, (200, 186, 150), (bx, by), (hx, hy), 2)
+            pygame.draw.circle(s, (60, 20, 20), (int(hx) + 1, int(hy) + 2), rc)
+            pygame.draw.circle(s, ORO_CHIARO if nome == self.sopra else (196, 28, 40), (int(hx), int(hy)),
+                               rc + (2 if nome == self.sopra else 0))
+            pygame.draw.circle(s, (255, 230, 220), (int(hx) - rc // 3, int(hy) - rc // 3), max(1, rc // 3))
+        s.set_clip(clip)
+        testo(s, "Trascina col mouse o usa A-D / frecce per girarlo  ·  W-S: inclina  ·  rotellina: zoom  ·  "
+                 "clic su uno spillo", font(15, italic=True), (110, 84, 60), (p.centerx, v.bottom + 16), ombra=False)
+        if self.messaggio:
+            testo(s, self.messaggio, font(20, bold=True), ROSSO, (p.centerx - 70, v.bottom + 46), ombra=False)
+        orig = self.btn_chiudi.rect
+        self.btn_chiudi.rect = orig.move(*off)
+        self.btn_chiudi.disegna(s, mouse)
+        self.btn_chiudi.rect = orig
 
 
 # --------------------------------------------------------------------------
@@ -961,7 +1520,10 @@ class Gioco:
         self.suoni = Suoni()
         self.sfondo = self._crea_sfondo()
         self.vignetta = self._crea_vignetta()
-        self.carte = [Carta(e, (40 + i * 232, 150, 208, 372)) for i, e in enumerate(ENIGMI)]
+        larg, passo = 150, 158                                  # sei carte tra il bordo sinistro e la porta
+        x0 = 505 - (passo * (N_ENIGMI - 1) + larg) // 2
+        self.carte = [Carta(e, (x0 + i * passo, 150, larg, 372)) for i, e in enumerate(ENIGMI)]
+        self.giro_globo = None                                  # dove si era lasciato il mappamondo (None: a caso)
         self.porta_rect = pygame.Rect(1000, 144, 240, 440)       # area cliccabile (arco + targa)
         self.porta_img = {False: crea_porta(196, 352, False), True: crea_porta(196, 352, True)}
         self.fondo_barra = gradiente(W, 118, (40, 12, 20), (14, 10, 12))
@@ -1029,7 +1591,7 @@ class Gioco:
         if len(self.risolti) == len(ENIGMI):
             self.mostra_toast("Tutti i frammenti sono tuoi! Le catene della porta sono cadute…", ORO_CHIARO)
         else:
-            self.mostra_toast("Frammento «%s» trovato! (%d/4)" % (enigma["frammento"], len(self.risolti)),
+            self.mostra_toast("Frammento «%s» trovato! (%d/%d)" % (enigma["frammento"], len(self.risolti), N_ENIGMI),
                               VERDE_CHIARO)
 
     def vittoria(self):
@@ -1111,13 +1673,13 @@ class Gioco:
                         self.mostra_toast("Hai già svelato il segreto del %s." % carta.enigma["nome"].lower(), PERGAMENA)
                     else:
                         self.suoni.suona("click")
-                        self.modale = Modale(self, carta.enigma)
+                        self.modale = (ModaleGlobo if carta.enigma["id"] == "globo" else Modale)(self, carta.enigma)
                     return True
             if self.porta_rect.collidepoint(pos):
                 if len(self.risolti) < len(ENIGMI):
                     self.suoni.suona("bloccato")
                     self.scuoti_porta = 0.5
-                    self.mostra_toast("La porta è sbarrata! Risolvi prima tutti gli enigmi (%d/4)." % len(self.risolti),
+                    self.mostra_toast("La porta è sbarrata! Risolvi prima tutti gli enigmi (%d/%d)." % (len(self.risolti), N_ENIGMI),
                                       ROSSO_ALLARME)
                 else:
                     self.suoni.suona("click")
@@ -1225,7 +1787,7 @@ class Gioco:
                 self.modale.disegna(s, mouse, t, dt)
                 m = self.modale
                 bott = [m.btn_continua] if m.fase == "ricompensa" else [m.btn_conferma, m.btn_chiudi]
-                cliccabile = any(b.rect.collidepoint(mouse) for b in bott)
+                cliccabile = any(b.rect.collidepoint(mouse) for b in bott) or getattr(m, "sopra", None) is not None
         self._aggiorna_cursore(cliccabile)
         self._presenta()
 
@@ -1282,8 +1844,8 @@ class Gioco:
         pygame.draw.line(s, ORO_SCURO, (0, 122), (W, 122), 1)
         coccarda(s, (70, 59), 34)
         testo(s, "IL SEGRETO DEL CARBONARO", font(42, bold=True), ORO, (124, 44), "midleft")
-        testo(s, "Torino, 4 maggio 1860  ·  Studio segreto della Carboneria  ·  Enigmi risolti: %d/4"
-              % len(self.risolti), font(19, italic=True), PERGAMENA, (126, 88), "midleft")
+        testo(s, "Torino, 4 maggio 1860  ·  Studio segreto della Carboneria  ·  Enigmi risolti: %d/%d"
+              % (len(self.risolti), N_ENIGMI), font(19, italic=True), PERGAMENA, (126, 88), "midleft")
         # timer
         rimasto = self.tempo_rimasto()
         box = pygame.Rect(W - 290, 14, 262, 92)
@@ -1349,19 +1911,19 @@ class Gioco:
         s.blit(pannello(targa.w, targa.h, (40, 30, 30), (16, 12, 14), 8), targa)
         pygame.draw.rect(s, ORO if aperta else BORDEAUX_CHIARO, targa, 2, border_radius=8)
         testo(s, "PORTA USCITA", font(22, bold=True), ORO_CHIARO if aperta else PERGAMENA, (targa.centerx, targa.top + 19))
-        stato = "Clicca per aprire" if aperta else "Sbarrata  ·  %d/4 frammenti" % len(self.risolti)
+        stato = "Clicca per aprire" if aperta else "Sbarrata  ·  %d/%d frammenti" % (len(self.risolti), N_ENIGMI)
         testo(s, stato, font(15, italic=True), VERDE_CHIARO if aperta else (230, 120, 110), (targa.centerx, targa.top + 42))
         return hover
 
     def _disegna_frammenti(self, s, t):
-        riquadro = pygame.Rect(210, 596, 760, 118)
+        riquadro = pygame.Rect(170, 596, 840, 118)
         s.blit(pannello(riquadro.w, riquadro.h, PERGAMENA, PERGAMENA_SCURA, 10), riquadro)
         pygame.draw.rect(s, BORDEAUX, riquadro, 3, border_radius=10)
         angoli_ornati(s, riquadro.inflate(-12, -12), BORDEAUX, 12)
         testo(s, "FRAMMENTI DELLA CHIAVE", font(17, bold=True), BORDEAUX_SCURO, (riquadro.centerx, riquadro.top + 16),
               ombra=False)
-        sw, gap = 150, 42
-        x0 = riquadro.centerx - (sw * 4 + gap * 3) // 2
+        sw, gap = 112, 26
+        x0 = riquadro.centerx - (sw * N_ENIGMI + gap * (N_ENIGMI - 1)) // 2
         for i, e in enumerate(ENIGMI):
             r = pygame.Rect(x0 + i * (sw + gap), riquadro.top + 32, sw, 56)
             if e["id"] in self.risolti:
@@ -1375,7 +1937,7 @@ class Gioco:
                     pygame.draw.line(s, (150, 124, 90), (r.left + k, r.bottom - 1), (r.left + min(r.w, k + 6), r.bottom - 1), 2)
                 testo(s, "? ? ?", font(26, bold=True), (150, 124, 90), r.center, ombra=False)
             testo(s, e["nome"], font(13, italic=True), (110, 84, 60), (r.centerx, r.bottom + 12), ombra=False)
-            if i < 3:
+            if i < N_ENIGMI - 1:
                 testo(s, "+", font(30, bold=True), BORDEAUX, (r.right + gap // 2, r.centery), ombra=False)
 
     def _disegna_toast(self, s):
@@ -1480,7 +2042,7 @@ class Gioco:
         fregio(s, (W // 2, 312), 520, (255, 160, 150))
         testo(s, "Il tempo è scaduto: sei stato arrestato e il messaggio per Garibaldi non partirà mai.",
               font(24, italic=True), (255, 214, 206), (W // 2, 360))
-        testo(s, "Frammenti della chiave recuperati: %d/4" % len(self.risolti), font(26, bold=True), ORO_CHIARO,
+        testo(s, "Frammenti della chiave recuperati: %d/%d" % (len(self.risolti), N_ENIGMI), font(26, bold=True), ORO_CHIARO,
               (W // 2, 430))
         frammenti = "  ".join(e["frammento"] if e["id"] in self.risolti else "???" for e in ENIGMI)
         testo(s, frammenti, font(34, bold=True), PERGAMENA, (W // 2, 480))
